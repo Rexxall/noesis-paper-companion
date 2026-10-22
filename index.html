@@ -657,9 +657,24 @@
         const first = await (await doc.getPage(1)).getTextContent();
         // Horizontal text only: arXiv prints a large rotated stamp down the margin.
         const items = first.items.filter((i) => i.str.trim() && Math.abs(i.transform[1]) < 0.01 && Math.abs(i.transform[2]) < 0.01 && !/^arXiv:\d/i.test(i.str.trim()));
+        if (!items.length) return "";
         const size = (i) => Math.abs(i.transform[3]);
         const max = Math.max(...items.map(size));
-        const title = items.filter((i) => size(i) >= max - 0.5).map((i) => i.str).join(" ").replace(/\s+/g, " ").trim();
+        // Group text into lines; a title in small caps mixes two font sizes on one line, so take whole lines.
+        const lines = new Map();
+        items.forEach((i) => { const y = Math.round(i.transform[5]); lines.set(y, [...(lines.get(y) || []), i]); });
+        const ordered = [...lines.entries()].sort((a, b) => b[0] - a[0]).map(([, row]) => row);
+        const big = (row) => Math.max(...row.map(size)) >= max * 0.9;
+        const startLine = ordered.findIndex((row) => row.some((i) => size(i) >= max - 0.5));
+        const titleLines = [];
+        for (let k = startLine; k < ordered.length && big(ordered[k]); k++) titleLines.push(ordered[k]);
+        // Join pieces that touch without a space; a real gap between words becomes one space.
+        const joinRow = (row) => row.sort((a, b) => a.transform[4] - b.transform[4]).reduce((text, i, k, arr) => {
+          if (k === 0) return i.str;
+          const prev = arr[k - 1], gap = i.transform[4] - (prev.transform[4] + prev.width);
+          return text + (gap > size(i) * 0.12 ? " " : "") + i.str;
+        }, "");
+        const title = titleLines.map(joinRow).join(" ").replace(/\s+/g, " ").trim();
         return title.length > 8 ? title.slice(0, 200) : "";
       } catch { return ""; }
     }
