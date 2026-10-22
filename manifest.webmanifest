@@ -1,0 +1,18 @@
+{
+  "name": "Noesis Paper Reader",
+  "short_name": "Noesis",
+  "description": "论文阅读器：PDF 原文、划词解释与翻译、术语卡、每篇论文单独的五行笔记。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f5ef",
+  "theme_color": "#126b61",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

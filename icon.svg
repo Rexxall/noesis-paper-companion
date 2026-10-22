@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Noesis Paper Companion">
+  <rect width="512" height="512" rx="96" fill="#f7f5ef"/>
+  <circle cx="256" cy="256" r="178" fill="#126b61"/>
+  <path d="M166 350V158h42l93 123V158h45v192h-40l-95-126v126z" fill="#fffdf8"/>
+  <path d="M154 376h204" stroke="#fffdf8" stroke-width="18" stroke-linecap="round" opacity=".72"/>
+</svg>
+
