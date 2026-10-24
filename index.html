@@ -417,9 +417,9 @@
     const stateKey = (id) => `noesis.reader.v4.paper.${id}`;
     const oldNotesKey = (id) => `noesis.reader.v2.notes.${id}`;
     const oldTermsKey = (id) => `noesis.reader.v2.terms.${id}`;
-    const SAMPLE = { id: "arxiv-2403.15176", source: "url", pdfUrl: "https://arxiv.org/pdf/2403.15176",
-      title: "Brain-aligning of semantic vectors improves neural decoding of visual stimuli",
-      meta: "arXiv 2403.15176 · 示例论文", link: "https://arxiv.org/abs/2403.15176" };
+    const SAMPLE = { id: "arxiv-1706.03762", source: "url", pdfUrl: "https://arxiv.org/pdf/1706.03762",
+      title: "Attention Is All You Need",
+      meta: "arXiv 1706.03762 · 示例论文", link: "https://arxiv.org/abs/1706.03762" };
 
     const $ = (id) => document.getElementById(id);
     const read = $("read");
@@ -1709,7 +1709,7 @@ ${terms || "-"}
 
     $("addBtn").addEventListener("click", () => {
       const entry = parseSource($("addInput").value);
-      if (!entry) { showToast("请输入 arXiv 编号（如 2403.15176）或以 http 开头的 PDF 链接。"); return; }
+      if (!entry) { showToast("请输入 arXiv 编号（如 1706.03762）或以 http 开头的 PDF 链接。"); return; }
       $("addInput").value = "";
       addPaper(entry);
     });
