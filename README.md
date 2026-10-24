@@ -33,6 +33,8 @@ Noesis keeps everything on the paper. It walks you through three passes: get the
 - **Margin notes.** Notes and AI answers sit beside the paragraph they belong to, joined by a thin line. Hover over a card and its passage lights up.
 - **Terms follow you.** Save a term once, and every place it appears in the paper gets a dotted underline. Hover over one to see your own explanation and how often the term appears.
 - **Click “Figure 3”** in the text and the figure pops up, trimmed to the figure itself, with a jump link.
+
+<img src="docs/screenshots/figure.jpg" alt="Clicking a figure reference in the text opens a trimmed preview of the figure" width="720">
 - **Outline with progress.** Sections come from the PDF's bookmarks or are detected from the layout. Tick them off as you go.
 - **Translation without an AI key.** A built-in machine translation, plus phonetics and word senses for single words.
 
