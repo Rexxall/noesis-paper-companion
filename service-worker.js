@@ -1,5 +1,5 @@
 // Fetch the page from the network first so updates reach installed apps.
-const CACHE_NAME = "noesis-paper-companion-v3";
+const CACHE_NAME = "noesis-paper-companion-v4";
 const ASSETS = [
   "./",
   "./index.html",
