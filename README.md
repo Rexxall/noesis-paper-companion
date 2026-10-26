@@ -4,7 +4,9 @@
 
 **Read a research paper in three passes — and come out able to explain it.**
 
-三遍读懂一篇论文：先看骨架，再精读，最后用自己的话复述。
+三遍读懂一篇论文：先看骨架，再精读，最后用自己的话讲出来。
+
+*AI never writes your summary. It only shows up after you have.*
 
 [**Open the app →**](https://rexxall.github.io/noesis-paper-companion/) · [Features](#features) · [Quick start](#quick-start) · [AI setup](#ai-setup) · [Privacy](#privacy) · [中文说明](#中文说明)
 
@@ -38,19 +40,34 @@ Noesis keeps everything on the paper. It walks you through three passes: get the
 - **Outline with progress.** Sections come from the PDF's bookmarks or are detected from the layout. Tick them off as you go.
 - **Translation without an AI key.** A built-in machine translation, plus phonetics and word senses for single words.
 
-### 3 · Recap
+<img src="docs/screenshots/translation.jpg" alt="Full-text translation aligned paragraph by paragraph beside the original page" width="720">
+
+### 3 · Recap — say it out loud
 
 <img src="docs/screenshots/recap.jpg" alt="Recap pass: three sentences in your own words, each checked against the paper" width="720">
 
-- Write three sentences: the problem, the method, a limitation or question.
+- Write three sentences: the problem, the method, a limitation or question. If you skimmed a section, Noesis says so before you start.
+- **Say it.** Press the mic and retell the paper in 60 seconds; the AI checks what you covered and what you missed. A week later it asks you to retell it again, and shows the two side by side.
+- **Interview practice.** The AI plays the paper's author and asks you five questions, one at a time, with a hint and a model answer you could say in an interview.
 - **Check against the paper.** The AI marks each sentence ✓ / ⚠ / ✗ and gives a *hint* (what is missing, which section to read) plus a page link. Click **看原文怎么说** to see what the paper actually says.
-- **Talk card.** One line, method, limitation, and a question you could ask the authors. Bring it over from your recap or let the AI draft it from your own words, then export it as Markdown, as a `.md` file, or straight into **Obsidian**.
+- **Talk card.** One line, method, limitation, and a question you could ask the authors. Bring it over from your recap or let the AI draft it from your own words, then export it as Markdown, an image, a `.md` file, or straight into **Obsidian**.
+- **Phrases worth keeping.** Academic expressions picked from the paper, each with when to use it.
+
+### Reading a professor's work
+
+- **Professor packs.** Type a name; pick their recent papers from OpenAlex; read them in order. Then generate a *research line*: themes, methods, recent shifts, and the questions you could ask.
+- **First-contact letter.** Drafted from *your own notes* on their papers, never from thin air; in Japanese it follows business-email form and comes with a Chinese gloss.
+- **One-page brief.** Everything above on one printable page for the interview.
+- **Follow the citations.** Click a reference in the text to see the paper; build a pack from the most-cited ones in one click.
 
 ### Also
 
-- Add papers by arXiv ID, PDF link, or upload. Each paper keeps its own notes, terms and recap.
+- Add papers by arXiv ID, PDF link, upload, or a Zotero `.bib` / `.ris` export. Each paper keeps its own notes, terms and recap.
+- Full-text search across the paper, your notes and terms (⌘F). Paragraph-by-paragraph translation aligned beside the original, or a *learning mode* that only glosses hard sentences and new words.
+- Box-select a figure or formula on blank space and ask about it; vision-capable models get the image.
+- Two looks: neutral grey, or the warm paper "mist" theme. Dark mode follows your system.
 - Dark mode follows your system.
-- Installable as an app on a phone or desktop (PWA).
+- Installable as an app on a phone or desktop (PWA). After the first visit the reader works offline for uploaded papers.
 
 <img src="docs/screenshots/dark.jpg" alt="Dark mode" width="720">
 
@@ -114,6 +131,12 @@ Then open http://localhost:8000.
 - Saving to Obsidian uses an `obsidian://` link, so very long notes may be cut off. Use **下载 .md** for those.
 
 ## Changelog
+
+**v3.1.0 — Say it out loud**
+
+- Spoken retelling with a check against the paper; retell again a week later; a nudge for sections you skimmed.
+- Interview practice, first-contact letter drafts, professor one-page brief, phrases worth keeping.
+- Citation cards and citation-chain packs, full-text search, paragraph translation with a learning mode, box-select to ask, AI skim highlights, formula explanations, DeepSeek and OpenAI-compatible services, `.bib` / `.ris` import, backup, mist theme, offline reader.
 
 **v3.0.0 — Three-pass reader**
 

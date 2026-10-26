@@ -1,5 +1,5 @@
 // Fetch the page from the network first so updates reach installed apps.
-const CACHE_NAME = "noesis-paper-companion-v4";
+const CACHE_NAME = "noesis-paper-companion-v5";
 const ASSETS = [
   "./",
   "./index.html",
@@ -24,7 +24,18 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
-  // Only this site's own files are cached; PDFs and the PDF.js library come straight from the network.
+  // The PDF engine and KaTeX are cached after first use, so uploaded papers open offline.
+  if (url.hostname === "cdn.jsdelivr.net") {
+    event.respondWith(caches.open(CACHE_NAME).then(async (cache) => {
+      const hit = await cache.match(event.request);
+      if (hit) return hit;
+      const res = await fetch(event.request);
+      if (res.ok) cache.put(event.request, res.clone());
+      return res;
+    }));
+    return;
+  }
+  // PDFs and API calls come straight from the network.
   if (url.origin !== self.location.origin) return;
   const isPage = event.request.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname.endsWith("/");
   if (isPage) {

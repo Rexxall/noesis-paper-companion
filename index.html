@@ -53,9 +53,10 @@
 
     /* Top bar */
     .app { height:100vh; display:grid; grid-template-rows:50px 1fr; }
-    .top { display:flex; align-items:center; gap:12px; padding:0 14px; border-bottom:1px solid var(--hair); min-width:0; background:var(--bg); }
+    .top { position:relative; display:flex; align-items:center; gap:12px; padding:0 14px; border-bottom:1px solid var(--hair); min-width:0; background:var(--bg); }
+    .progress { position:absolute; left:0; bottom:-1px; height:2px; width:0; background:var(--accent); transition:width .4s ease; }
     .brand { font-weight:600; font-size:13px; color:var(--mute); letter-spacing:.02em; }
-    #paperTitle { margin:0; font-size:14px; font-weight:500; min-width:0; max-width:420px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; outline:none; border-radius:6px; padding:3px 6px; }
+    #paperTitle { margin:0; font-family:Georgia,"Songti SC","Hiragino Mincho ProN","Noto Serif CJK SC",serif; font-size:15px; font-weight:500; min-width:0; max-width:420px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; outline:none; border-radius:6px; padding:3px 6px; }
     #paperTitle:hover { background:var(--hover); }
     #paperTitle:focus { white-space:normal; background:var(--card); box-shadow:var(--shadow-pop); }
     .passes { margin:0 auto; display:flex; background:var(--rail); border-radius:10px; padding:3px; gap:2px; flex-shrink:0; }
@@ -136,6 +137,17 @@
     .text-layer { overflow:hidden; line-height:1; }
     .text-layer span { position:absolute; color:transparent; white-space:pre; transform-origin:0 0; cursor:text; font-family:sans-serif; line-height:1; }
     .text-layer span::selection { background:rgba(53,89,199,.26); }
+    .text-layer span { z-index:1; }
+    .text-layer { cursor:crosshair; }
+    /* App chrome is never part of a text selection. */
+    .top, .rail, .pager, .drawer-tabs, .passes, .note small, .note .acts, .pnum { -webkit-user-select:none; user-select:none; }
+    .region-box { position:absolute; z-index:3; pointer-events:none; border:1.5px solid var(--accent); background:rgba(53,89,199,.08); border-radius:3px; }
+    .hl-layer div.region { background:rgba(53,89,199,.05); mix-blend-mode:normal; outline:1.5px dashed rgba(53,89,199,.6); outline-offset:1px; }
+    .inline-check { display:flex !important; align-items:center; gap:6px; color:var(--ink2) !important; }
+    .inline-check input { width:auto; }
+    .text-layer .end-pad { display:block; position:absolute; inset:100% 0 0; z-index:0; cursor:default; user-select:none; -webkit-user-select:none; }
+    .text-layer.selecting .end-pad { top:0; }
+    .text-layer br::selection { background:transparent; }
     .text-layer span.term { text-decoration:underline dotted #3559c7; text-decoration-thickness:2px; text-underline-offset:2px; }
     .text-layer span.ref { cursor:pointer; background:rgba(53,89,199,.1); border-radius:2px; text-decoration:underline #3559c7; text-decoration-thickness:1.5px; text-underline-offset:2px; }
     .text-layer span.ref:hover { background:rgba(53,89,199,.2); }
@@ -234,6 +246,222 @@
     .lib-item:hover .link-del { opacity:1; }
     .toast { position:fixed; z-index:40; left:50%; top:60px; transform:translateX(-50%); background:var(--ink); color:var(--bg); border-radius:999px; padding:8px 16px; font-size:12.5px; display:none; box-shadow:var(--shadow-pop); }
 
+
+    /* Search */
+    .search-bar { position:fixed; z-index:32; right:16px; top:56px; width:440px; max-width:calc(100vw - 24px); background:var(--card); border-radius:12px; box-shadow:var(--shadow-pop); padding:8px; display:none; animation:pop-in .12s ease-out; }
+    .search-bar.is-on { display:block; }
+    .search-row { display:flex; gap:4px; align-items:center; }
+    .search-row input { flex:1; }
+    .search-row .btn { background:none; padding:5px 8px; }
+    .search-row .btn:hover { background:var(--hover); }
+    .search-results { max-height:50vh; overflow:auto; margin-top:6px; }
+    .search-results:empty { display:none; }
+    .search-results button { display:block; width:100%; text-align:left; padding:6px 8px; border-radius:7px; font-size:12.5px; color:var(--ink2); line-height:1.5; }
+    .search-results button:hover, .search-results button.is-on { background:var(--accent-soft); }
+    .search-results small { color:var(--mute); margin-right:6px; }
+    .search-results mark { background:rgba(255,170,0,.35); color:inherit; border-radius:2px; }
+    .text-layer span.hit { background:rgba(255,170,0,.45); border-radius:2px; }
+
+    /* Citations */
+    .text-layer span.cite { cursor:pointer; background:rgba(47,138,87,.12); border-radius:2px; }
+    .text-layer span.cite:hover { background:rgba(47,138,87,.26); }
+    #citePop { width:440px; max-width:calc(100vw - 24px); padding:12px 14px; max-height:70vh; overflow:auto; }
+    .cite-item + .cite-item { margin-top:12px; padding-top:12px; border-top:1px solid var(--hair); }
+    .cite-item .raw { font-size:11.5px; color:var(--mute); line-height:1.5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+    .cite-item .title { font-size:13.5px; font-weight:600; color:var(--ink); margin:4px 0 2px; line-height:1.4; }
+    .cite-item .meta { font-size:11.5px; color:var(--mute); }
+    .cite-item .abs { font-size:12.5px; color:var(--ink2); margin-top:6px; line-height:1.6; }
+    .cite-item .row { margin-top:8px; }
+
+    /* AI skim highlights */
+    .hl-layer div.skim { mix-blend-mode:multiply; border-radius:2px; }
+    .hl-layer div.skim.goal { background:rgba(47,138,87,.2); }
+    .hl-layer div.skim.method { background:rgba(53,89,199,.17); }
+    .hl-layer div.skim.result { background:rgba(214,120,20,.22); }
+    body[data-pass=recap] .hl-layer div.skim { display:none; }
+    .skim-box { padding:0 4px; }
+    .skim-legend { display:none; gap:10px; margin-top:8px; font-size:12px; color:var(--ink2); }
+    .skim-legend.is-on { display:flex; }
+    .skim-legend label { display:flex; align-items:center; gap:4px; cursor:pointer; }
+    .skim-legend input { width:auto; }
+    i.sk { width:10px; height:10px; border-radius:3px; display:inline-block; }
+    i.sk.goal { background:rgba(47,138,87,.55); } i.sk.method { background:rgba(53,89,199,.5); } i.sk.result { background:rgba(214,120,20,.6); }
+    #skimList button { display:block; text-align:left; font-size:12px; color:var(--ink2); padding:4px 6px; border-radius:6px; margin-top:4px; line-height:1.45; }
+    #skimList button:hover { background:var(--hover); }
+
+    /* Drawer tabs and professor packs */
+    .drawer-tabs { display:flex; gap:2px; background:var(--field); border-radius:9px; padding:3px; }
+    .drawer-tabs button { flex:1; padding:6px 0; border-radius:7px; font-size:13px; color:var(--ink2); }
+    .drawer-tabs button.is-on { background:var(--card); color:var(--ink); box-shadow:var(--shadow-sm); }
+    .dpane { display:none; flex-direction:column; gap:10px; }
+    .dpane.is-on { display:flex; }
+    .lib-group { font-size:11px; font-weight:600; color:var(--mute); margin:10px 2px 2px; letter-spacing:.03em; }
+    .lib-item .row { margin-top:4px; gap:10px; }
+    .prof { display:grid; gap:2px; padding:8px 10px; border-radius:9px; background:var(--field); }
+    .prof + .prof { margin-top:6px; }
+    .prof strong { font-size:13px; font-weight:500; }
+    .work { display:flex; gap:8px; align-items:flex-start; padding:6px 4px; border-radius:7px; font-size:12.5px; }
+    .work:hover { background:var(--hover); }
+    .work input { width:auto; margin-top:3px; }
+    .work .w-title { color:var(--ink); line-height:1.4; }
+    .work .w-meta { color:var(--mute); font-size:11.5px; }
+    .badge { font-size:10.5px; padding:0 6px; border-radius:999px; background:var(--accent-soft); color:var(--accent); margin-left:4px; white-space:nowrap; }
+    .badge.off { background:var(--field); color:var(--mute); }
+    .pack { border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+    .pack + .pack { margin-top:8px; }
+    .pack h5 { margin:0; font-size:13px; font-weight:600; display:flex; justify-content:space-between; }
+    .pack .summary { font-size:12.5px; color:var(--ink2); line-height:1.6; margin-top:8px; white-space:pre-wrap; }
+    .pack .summary strong { color:var(--ink); }
+
+
+    /* Paragraph translation, aligned beside the original */
+    .trans-col { position:relative; width:var(--trans-w, 380px); flex-shrink:0; display:none; }
+    body.trans-on.has-margin .trans-col { display:block; }
+    body.trans-on .margin { display:none; }
+    body.trans-on.has-margin .page-wrap { margin-top:34px; }
+    body.trans-on .dot-layer { display:block; }
+    body[data-pass=recap] .trans-col { display:none !important; }
+    .trans-head { position:absolute; left:8px; right:0; top:-26px; display:flex; gap:8px; align-items:center; font-size:11.5px; color:var(--mute); height:22px; }
+    .trans-head .btn { padding:3px 9px; font-size:11.5px; }
+    .tp { position:absolute; left:0; width:100%; font-size:13px; line-height:1.65; color:var(--ink); padding:4px 8px; border-radius:7px; cursor:default; transition:background .12s; }
+    .tp:hover { background:var(--accent-soft); }
+    .tp.k-heading { font-weight:600; }
+    .tp.k-caption { font-size:12px; color:var(--ink2); }
+    .tp.wait { color:var(--mute); font-style:italic; }
+    .hl-layer div.para-lit { background:rgba(53,89,199,.1); mix-blend-mode:multiply; outline:1.5px solid rgba(53,89,199,.35); }
+    #transToggle.is-on { background:var(--accent-soft); color:var(--accent); }
+    #transStatus:empty { display:none; }
+
+
+    /* Interview practice */
+    #ivBox { margin-top:10px; }
+    .iv-q { font-size:13.5px; color:var(--ink); font-weight:500; margin:12px 0 6px; line-height:1.6; }
+    .iv-q small { display:block; font-size:11px; color:var(--mute); font-weight:400; }
+    .iv-a { font-size:13px; color:var(--ink2); background:var(--field); border-radius:8px; padding:8px 10px; white-space:pre-wrap; }
+    .iv-follow { font-size:12.5px; color:var(--accent); margin-top:4px; }
+    /* Letters */
+    .letter { margin-top:8px; font-size:12.5px; line-height:1.7; white-space:pre-wrap; background:var(--field); border-radius:8px; padding:10px 12px; color:var(--ink); }
+    .letter + .letter { margin-top:6px; }
+    /* Learning mode in the translation column */
+    .tl { position:absolute; left:0; width:100%; font-size:12.5px; line-height:1.6; padding:4px 8px; border-radius:7px; }
+    .tl:hover { background:var(--accent-soft); }
+    .tl .words { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:4px; }
+    .tl .word { font-size:12px; padding:1px 8px; border-radius:999px; background:var(--field); color:var(--ink2); cursor:pointer; }
+    .tl .word b { color:var(--ink); font-weight:600; margin-right:4px; }
+    .tl .word:hover { background:var(--line); }
+    .tl .hard { margin-top:4px; }
+    .tl .hard i { display:block; font-style:italic; color:var(--mute); font-size:11.5px; }
+    .tl .easy { color:var(--mute); font-size:11.5px; }
+    .seg { display:inline-flex; background:var(--field); border-radius:7px; padding:2px; }
+    .seg button { font-size:11.5px; padding:2px 9px; border-radius:6px; color:var(--ink2); }
+    .seg button.is-on { background:var(--card); color:var(--ink); box-shadow:var(--shadow-sm); }
+
+
+    /* ---------- Visual pass for the newer pieces ---------- */
+    /* Search */
+    .search-bar { padding:6px; }
+    .search-row input { background:var(--field); border-radius:9px; }
+    .search-results { border-top:1px solid var(--hair); margin-top:6px; padding-top:4px; }
+    .search-results button { display:grid; grid-template-columns:58px 1fr; gap:6px; align-items:baseline; }
+    .search-results small { font-size:10.5px; letter-spacing:.02em; }
+    #searchCount { min-width:44px; text-align:right; font-variant-numeric:tabular-nums; }
+
+    /* Citation cards */
+    #citePop { padding:14px 16px; }
+    .cite-item .raw { background:var(--field); border-radius:7px; padding:6px 8px; }
+    .cite-item .title { font-size:14px; margin-top:8px; }
+    .cite-item .meta { margin-top:2px; }
+    .cite-item .abs { border-left:2px solid var(--line); padding-left:10px; }
+    .cite-item .row .btn { background:var(--accent-soft); color:var(--accent); }
+
+    /* AI skim */
+    .skim-box .btn, #quickTrans { width:100%; text-align:center; background:var(--card); box-shadow:var(--shadow-sm); color:var(--ink); }
+    .skim-box .btn:hover, #quickTrans:hover { background:var(--card); box-shadow:var(--shadow-pop); }
+    .skim-legend label { padding:2px 8px; border-radius:999px; background:var(--card); box-shadow:var(--shadow-sm); }
+    .skim-legend input { display:none; }
+    .skim-legend label:has(input:not(:checked)) { opacity:.45; }
+    #skimList button { display:grid; grid-template-columns:12px 1fr; gap:6px; }
+    #skimList button i.sk { margin-top:5px; }
+
+    /* Drawer: professor packs */
+    .prof { border:1px solid transparent; text-align:left; transition:border-color .12s, background .12s; }
+    .prof:hover { border-color:var(--accent); background:var(--card); }
+    .work { border-bottom:1px solid var(--hair); border-radius:0; padding:8px 4px; }
+    .work input { accent-color:var(--accent); }
+    .pack { border:0; background:var(--field); border-radius:12px; padding:12px 14px; }
+    .pack h5 { font-size:14px; }
+    .pack .summary { background:var(--card); border-radius:9px; padding:10px 12px; }
+    .pack .row .btn { background:var(--card); }
+    .letter { background:var(--card); border-left:3px solid var(--accent); border-radius:4px 9px 9px 4px; font-size:13px; }
+    .letter + .letter { border-left-color:var(--line); color:var(--ink2); font-size:12.5px; }
+    #myProfile { font-size:13px; }
+
+    /* Interview: a quiet conversation */
+    #interviewCard { background:linear-gradient(180deg, var(--card), var(--field)); }
+    .iv-q { display:flex; flex-direction:column; gap:2px; background:var(--field); border-radius:12px 12px 12px 4px; padding:9px 12px; margin:14px 30px 6px 0; }
+    .iv-q small { font-size:10.5px; letter-spacing:.03em; }
+    .iv-a { background:var(--accent-soft); color:var(--ink); border-radius:12px 12px 4px 12px; margin:0 0 4px 30px; padding:9px 12px; }
+    #ivBox > textarea { margin-left:30px; width:calc(100% - 30px); }
+    #ivBox > .row { margin-left:30px; }
+    #ivBox .fb { margin:4px 0 0 30px; }
+    #ivBox .fb .quiet { background:var(--card); }
+    .iv-follow { display:block; margin:6px 0 0 30px; text-align:left; }
+
+    /* Translation column */
+    .trans-head { gap:6px; }
+    .trans-head .btn { background:var(--card); box-shadow:var(--shadow-sm); }
+    .tp { border-left:2px solid transparent; border-radius:0 7px 7px 0; }
+    .tp:hover { border-left-color:var(--accent); }
+    .tp.k-heading { font-size:13.5px; margin-top:2px; }
+    .tl { border-left:2px solid transparent; border-radius:0 7px 7px 0; }
+    .tl:hover { border-left-color:var(--accent); }
+    .tl .word { background:var(--card); box-shadow:var(--shadow-sm); padding:2px 9px; }
+    .tl .word b { color:var(--accent); }
+    .tl .word:hover { box-shadow:var(--shadow-pop); background:var(--card); }
+    .tl .hard { background:var(--card); border-radius:8px; padding:6px 9px; margin-top:6px; box-shadow:var(--shadow-sm); }
+    .tl .hard i { margin-bottom:3px; }
+    #transStatus { margin-left:4px; padding:2px 8px; border-radius:999px; background:var(--accent-soft); color:var(--accent); font-size:11.5px; }
+
+
+    /* ---------- Personal touches ---------- */
+    @media (prefers-color-scheme: light) { :root[data-theme=mist] { --bg:#f3efe6; --rail:#ece7dc; --card:#fffdf8; --field:#f6f2ea; --hover:rgba(42,41,37,.05); --ink:#2a2925; --ink2:#5b574f; --mute:#9b968b; --line:#ddd6c8; --hair:rgba(42,41,37,.08); --accent:#5f7f6b; --accent-soft:#e2eadf; --note-bar:#c4875c; --mark:rgba(222,170,60,.3); --ai-mark:rgba(95,127,107,.18); } }
+    @media (prefers-color-scheme: dark) { body.invert-paper .page canvas { filter:invert(.92) hue-rotate(180deg); } }
+    @keyframes pass-fade { from { opacity:0; transform:translateY(4px); } }
+    body.switching .rail-skel, body.switching .rail-read, body.switching .recap { animation:pass-fade .22s ease-out; }
+    .note:not(.ai) .text { font-size:13.5px; }
+    .note.thread { margin-left:14px; width:calc(100% - 14px); border-left-style:dashed; }
+    .margin-hint { position:absolute; left:0; top:40px; width:100%; font-size:12px; color:var(--mute); line-height:1.6; padding:0 10px; }
+    .nudge { margin-top:12px; background:var(--accent-soft); border-radius:10px; padding:9px 12px; font-size:12.5px; color:var(--ink); line-height:1.6; }
+    .nudge .link { margin-left:4px; }
+    .retell { margin-top:12px; background:var(--field); border-left:3px solid var(--accent); border-radius:4px 10px 10px 4px; padding:9px 12px; font-size:12.5px; color:var(--ink); }
+    .history { margin-top:12px; font-size:12px; color:var(--mute); }
+    .history details { background:var(--field); border-radius:9px; padding:6px 10px; }
+    .history summary { cursor:pointer; }
+    .history p { margin:6px 0 0; color:var(--ink2); white-space:pre-wrap; }
+    .btn.mic.is-on { background:var(--bad); color:#fff; animation:pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 50% { box-shadow:0 0 0 6px rgba(192,57,43,.18); } }
+    #spokenText { margin-top:8px; font-size:13.5px; line-height:1.6; }
+    #spokenResult { margin-top:8px; font-size:12.5px; line-height:1.7; }
+    #spokenResult .row { margin-top:4px; gap:10px; }
+    #spokenResult .pill { font-size:11.5px; padding:1px 8px; border-radius:999px; background:var(--field); }
+    #spokenResult .pill.ok { color:var(--ok); } #spokenResult .pill.missing { color:var(--warn); } #spokenResult .pill.wrong { color:var(--bad); }
+    .card.finish { background:linear-gradient(135deg, var(--accent-soft), var(--card) 60%); border:0; }
+    .card.finish h4 { font-size:12px; color:var(--mute); font-weight:500; letter-spacing:.04em; }
+    .card.finish .one { font-family:Georgia,"Songti SC","Hiragino Mincho ProN",serif; font-size:16px; line-height:1.6; color:var(--ink); margin:4px 0 10px; }
+    .card.finish .stats { display:flex; gap:14px; font-size:12px; color:var(--ink2); }
+    .card.finish .stats b { display:block; font-size:18px; color:var(--ink); font-weight:600; }
+    .phr { display:grid; gap:6px; margin-top:8px; }
+    .phr button { text-align:left; background:var(--field); border-radius:9px; padding:8px 10px; font-size:12.5px; line-height:1.5; color:var(--ink2); }
+    .phr button:hover { background:var(--accent-soft); }
+    .phr b { display:block; color:var(--ink); font-weight:600; }
+    .phr i { font-style:normal; color:var(--accent); }
+    .welcome { position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.28); display:grid; place-items:center; padding:20px; }
+    .welcome-card { width:460px; max-width:100%; background:var(--card); border-radius:16px; padding:28px 30px; box-shadow:var(--shadow-pop); }
+    .welcome-card .brand { font-size:12px; letter-spacing:.08em; color:var(--mute); }
+    .welcome-card h2 { margin:6px 0 10px; font-family:Georgia,"Songti SC","Hiragino Mincho ProN",serif; font-size:26px; font-weight:600; }
+    .welcome-card p { margin:0 0 18px; font-size:14px; line-height:1.7; color:var(--ink2); }
+    .fig-card.is-peek { box-shadow:var(--shadow-pop); }
+
     @media (max-width: 900px) {
       .top { gap:8px; padding:0 8px; }
       .brand, #openSource { display:none; }
@@ -260,11 +488,13 @@
       <span class="brand">Noesis</span>
       <h1 id="paperTitle" contenteditable="true" spellcheck="false" title="点一下可以改标题"></h1>
       <nav class="passes" aria-label="阅读阶段">
-        <button data-pass="skeleton"><b>1</b><span>骨架</span></button>
-        <button data-pass="read"><b>2</b><span id="readLabel">精读</span></button>
-        <button data-pass="recap"><b>3</b><span>复述</span></button>
+        <button data-pass="skeleton" title="看骨架：摘要、图、结论"><b>1</b><span>骨架</span></button>
+        <button data-pass="read" title="读明白：批注、术语、翻译"><b>2</b><span id="readLabel">精读</span></button>
+        <button data-pass="recap" title="讲出来：复述、面谈、能聊卡"><b>3</b><span>复述</span></button>
       </nav>
+      <div class="progress" id="progressBar"></div>
       <div class="tools">
+        <button class="btn" id="searchToggle" title="搜索（⌘F）" aria-label="搜索">搜索</button>
         <a id="openSource" target="_blank" rel="noreferrer">原文 ↗</a>
         <button class="btn" id="libToggle" aria-expanded="false" aria-controls="libDrawer">论文 ▾</button>
         <button class="btn" id="settingsToggle" aria-label="设置">⚙︎</button>
@@ -281,6 +511,17 @@
           <label class="step"><input type="checkbox" data-check="figures"><span>看所有图和图注</span></label>
           <div class="skel-figs" id="skelFigs"></div>
           <label class="step"><input type="checkbox" data-check="conclusion"><span><button class="link" data-jump="conclusion">读结论</button></span></label>
+          <div class="row" style="margin:6px 4px 0"><button class="btn" id="quickTrans">只翻摘要和结论</button></div>
+          <h4>AI 标重点 <span id="skimState"></span></h4>
+          <div class="skim-box">
+            <button class="btn" id="skimBtn">标出目标、方法、结果</button>
+            <div class="skim-legend" id="skimLegend">
+              <label><input type="checkbox" data-skim="goal" checked><i class="sk goal"></i>目标</label>
+              <label><input type="checkbox" data-skim="method" checked><i class="sk method"></i>方法</label>
+              <label><input type="checkbox" data-skim="result" checked><i class="sk result"></i>结果</label>
+            </div>
+            <div id="skimList"></div>
+          </div>
           <h4>一句话：这篇在解决什么问题？</h4>
           <textarea id="skelAnswer" rows="3" placeholder="用自己的话写，中文就行"></textarea>
           <div class="row"><button class="btn dark" id="skelDone">完成第一遍，开始精读</button></div>
@@ -291,6 +532,7 @@
           <div id="toc"><p class="quiet">正在读取目录…</p></div>
           <h4>图表 <span id="figCount"></span></h4>
           <div id="figList"></div>
+          <div class="row" style="margin:8px 4px 0"><button class="btn" id="citeChain" title="把这篇引用最多的几篇建成一个阅读包">顺着引用读</button></div>
           <h4>我的术语 <span id="termCount"></span></h4>
           <div id="termList"></div>
           <div class="ask-paper">
@@ -313,16 +555,34 @@
           <button id="zoomIn" aria-label="放大">＋</button>
           <span class="sep"></span>
           <button id="copyPageText">复制本页</button>
+          <span class="sep"></span>
+          <button id="transToggle" title="段落对照翻译">对照翻译</button>
+          <span id="transStatus" class="quiet"></span>
         </nav>
       </main>
 
       <aside class="recap" id="recap">
         <h3>用自己的话说三句</h3>
         <p class="quiet" style="margin:2px 0 0">先别看批注。写完点“对照原文”，AI 只指出错和漏，不替你改写。</p>
+        <div class="nudge hidden" id="nudge"></div>
+        <div class="retell hidden" id="retell"></div>
+        <div class="history hidden" id="recapHistory"></div>
         <div class="q"><label for="q1">1 · 这篇解决什么问题</label><textarea id="q1" data-recap="q1" rows="3"></textarea><div class="fb" id="fb-q1"></div></div>
         <div class="q"><label for="q2">2 · 怎么做的</label><textarea id="q2" data-recap="q2" rows="3"></textarea><div class="fb" id="fb-q2"></div></div>
         <div class="q"><label for="q3">3 · 局限 / 我想问的</label><textarea id="q3" data-recap="q3" rows="3"></textarea><div class="fb" id="fb-q3"></div></div>
         <div class="row"><button class="btn dark" id="checkRecap">对照原文</button><span class="quiet" id="recapStatus"></span></div>
+
+        <div class="card" id="spokenCard">
+          <h4>讲给我听</h4>
+          <p class="quiet" style="margin:0">面谈是说出来的。按住麦克风，用 60 秒把这篇讲一遍；说完再对照原文，看漏了什么。</p>
+          <div class="row">
+            <button class="btn mic" id="spokenMic" aria-pressed="false">🎙 开始说</button>
+            <span class="quiet" id="spokenTimer"></span>
+          </div>
+          <textarea id="spokenText" rows="4" placeholder="说的话会出现在这里，也可以直接打字"></textarea>
+          <div class="row"><button class="btn dark" id="spokenCheck">对照原文</button><span class="quiet" id="spokenStatus"></span></div>
+          <div id="spokenResult"></div>
+        </div>
 
         <div class="card" id="talkCard">
           <h4>能聊卡</h4>
@@ -338,8 +598,25 @@
             <button class="btn dark" id="toObsidian">存到 Obsidian</button>
             <button class="btn" id="copyMd">复制 Markdown</button>
             <button class="btn" id="downloadMd">下载 .md</button>
+            <button class="btn" id="cardPng">导出图片</button>
           </div>
           <div id="mdOut"></div>
+        </div>
+
+        <div class="card finish hidden" id="finishCard"></div>
+
+        <div class="card" id="interviewCard">
+          <h4>模拟面谈</h4>
+          <p class="quiet" style="margin:0">AI 扮演这篇论文的作者，像面谈一样问你 5 个问题。你答完，它对照原文点评，并给出可以直接说出口的示范回答。日语面谈就把 ⚙︎ 里的输出语言切到日本語。</p>
+          <div id="ivBox"></div>
+          <div class="row"><button class="btn dark" id="ivStart">开始模拟面谈</button></div>
+        </div>
+
+        <div class="card" id="phraseCard">
+          <h4>这篇里值得学的表达</h4>
+          <p class="quiet" style="margin:0">从原文里挑出可以在面谈和邮件里用的学术表达。点一条就复制。</p>
+          <div id="phraseList"></div>
+          <div class="row"><button class="btn" id="phraseBtn">挑出表达</button></div>
         </div>
       </aside>
     </div>
@@ -347,18 +624,46 @@
 
   <div class="scrim" id="scrim"></div>
   <aside class="drawer" id="libDrawer" aria-label="论文列表">
-    <strong>我的论文</strong>
+    <div class="drawer-tabs">
+      <button class="is-on" data-dtab="papers">我的论文</button>
+      <button data-dtab="packs">导师论文包</button>
+    </div>
+    <section class="dpane is-on" id="dpane-papers">
     <div class="add">
       <input id="addInput" placeholder="arXiv 编号或 PDF 链接" aria-label="arXiv 编号或 PDF 链接">
       <button class="btn dark" id="addBtn">添加</button>
     </div>
-    <label class="link" for="uploadPdf" style="cursor:pointer">或上传一个 PDF</label>
+    <div class="row" style="margin-top:0;gap:14px">
+      <label class="link" for="uploadPdf" style="cursor:pointer">上传一个 PDF</label>
+      <label class="link" for="importRefs" style="cursor:pointer" title="Zotero、EndNote 导出的文献列表">导入 .bib / .ris</label>
+    </div>
     <input id="uploadPdf" type="file" accept="application/pdf" hidden>
+    <input id="importRefs" type="file" accept=".bib,.ris,.txt,text/plain" hidden>
     <div id="library"></div>
+    </section>
+    <section class="dpane" id="dpane-packs">
+      <p class="quiet">输入老师的名字，从 OpenAlex 找到他近年的论文，挑几篇建成论文包，按顺序读。读完可以生成一张“研究线”卡片。</p>
+      <div class="add">
+        <input id="profName" placeholder="老师名字（英文），如 Takashi Abe">
+        <button class="btn dark" id="profSearch">找</button>
+      </div>
+      <div id="profResults"></div>
+      <div id="packWorks"></div>
+      <div id="packList"></div>
+      <label class="quiet" for="myProfile" style="margin-top:6px">我的背景和想做的方向（写首联信时用，只存在这台设备）</label>
+      <textarea id="myProfile" rows="3" placeholder="比如：临床医学本科，做过两年流行病学数据分析；想研究职场压力与女性健康"></textarea>
+    </section>
+    <input id="attachPdf" type="file" accept="application/pdf" hidden>
     <p class="quiet" style="margin-top:auto">论文只从你给的链接或上传的文件读取；笔记和 key 只存在这台设备的浏览器里。</p>
   </aside>
 
   <div class="settings" id="settings">
+    <label for="langInput">输出语言（翻译、AI 回答、能聊卡）</label>
+    <select id="langInput">
+      <option value="zh">中文</option>
+      <option value="ja">日本語</option>
+      <option value="en">English</option>
+    </select>
     <label for="providerInput">AI 服务</label>
     <select id="providerInput">
       <option value="deepseek">DeepSeek</option>
@@ -367,15 +672,37 @@
     </select>
     <label for="baseInput" id="baseLabel">接口地址（以 /v1 或域名结尾）</label>
     <input id="baseInput" placeholder="https://api.example.com/v1">
+    <label class="inline-check"><input type="checkbox" id="visionInput"> 模型能看图（框选时一并发送区域截图）</label>
     <label for="apiKey">API key（只存在这台设备的浏览器）</label>
     <input id="apiKey" type="password" placeholder="不填也能用：会改为复制 prompt">
     <label for="modelInput">模型</label>
     <input id="modelInput">
+    <label for="themeInput">界面主题</label>
+    <select id="themeInput">
+      <option value="plain">中性灰</option>
+      <option value="mist">晨雾（暖纸色，浅色模式下）</option>
+    </select>
+    <label class="inline-check"><input type="checkbox" id="invertInput"> 深色模式下把论文页反色</label>
     <label for="vaultInput">Obsidian 库名（不填就用最近打开的库）</label>
     <input id="vaultInput" placeholder="比如 我的笔记库">
     <label for="folderInput">存到库里的文件夹</label>
     <input id="folderInput" placeholder="Noesis">
     <div class="row"><button class="btn dark" id="saveSettings">保存</button><button class="btn" id="clearKey">清除 key</button></div>
+    <label>备份 / 换设备</label>
+    <div class="row" style="margin-top:0"><button class="btn" id="exportAll">导出全部数据</button><button class="btn" id="importAllBtn">导入备份</button></div>
+    <p class="quiet" style="margin:6px 0 0">包含论文列表、批注、术语、复述和设置；不含 API key 和上传的 PDF。</p>
+    <input id="importFile" type="file" accept="application/json,.json" hidden>
+  </div>
+
+  <div class="search-bar" id="searchBar" role="search">
+    <div class="search-row">
+      <input id="searchInput" placeholder="搜原文、批注和术语" aria-label="搜索">
+      <span class="quiet" id="searchCount"></span>
+      <button class="btn" id="searchPrev" aria-label="上一个">↑</button>
+      <button class="btn" id="searchNext" aria-label="下一个">↓</button>
+      <button class="btn" id="searchClose" aria-label="关闭">✕</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
   </div>
 
   <div class="pop" id="selPop" role="dialog">
@@ -385,6 +712,7 @@
       <button data-act="note">批注</button>
       <button data-act="ask">问 AI</button>
       <button data-act="term">记成术语</button>
+      <button data-act="formula">解释公式</button>
       <button data-act="highlight">高亮</button>
     </div>
     <div id="selBody"></div>
@@ -396,6 +724,18 @@
     <div class="row" style="margin-top:2px"><button class="link" id="figJump">跳到图 →</button></div>
   </div>
   <div class="pop" id="notePop"></div>
+  <div class="pop" id="citePop"></div>
+  <div class="welcome hidden" id="welcome">
+    <div class="welcome-card">
+      <div class="brand">Noesis</div>
+      <h2>读完，能讲出来。</h2>
+      <p>这不是一个替你读论文的工具。它带你读三遍：先看骨架，再读明白，最后用自己的话讲出来。AI 只在你写完之后出现。</p>
+      <div class="row">
+        <button class="btn dark" id="welcomeTry">先试一篇</button>
+        <button class="btn" id="welcomeAdd">添加我的论文</button>
+      </div>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
 
   <script>
@@ -481,7 +821,7 @@
       if (top + h > window.innerHeight - 12) top = Math.max(12, rect.top - h - 8);
       pop.style.left = `${left}px`; pop.style.top = `${top}px`;
     }
-    function hidePops() { ["selPop", "termPop", "figPop", "notePop"].forEach((id) => { $(id).style.display = "none"; }); }
+    function hidePops() { ["selPop", "termPop", "figPop", "notePop", "citePop"].forEach((id) => { $(id).style.display = "none"; }); }
 
     // ---------- per-paper state ----------
     function blankState() {
@@ -491,8 +831,9 @@
     // Version 2 kept five note lines and plain term cards; carry them over without deleting the old copies.
     function loadState(id) {
       const saved = readJson(stateKey(id), null);
-      if (saved) return { ...blankState(), ...saved };
+      if (saved) { if (!saved.startedAt) saved.startedAt = Date.now(); return { ...blankState(), ...saved }; }
       const s = blankState();
+      s.startedAt = Date.now();
       const notes = readJson(oldNotesKey(id), null);
       if (notes) {
         s.skeleton.answer = notes.oneLine || "";
@@ -562,16 +903,33 @@
       box.innerHTML = "";
       const list = library();
       if (!list.length) { box.append(el("p", "quiet", "还没有论文。在上面输入 arXiv 编号、PDF 链接，或上传 PDF。")); return; }
-      list.forEach((p) => {
-        const item = el("div", `lib-item${paper?.id === p.id ? " is-on" : ""}`);
-        item.tabIndex = 0;
+      const item = (p) => {
+        const it = el("div", `lib-item${paper?.id === p.id ? " is-on" : ""}`);
+        it.tabIndex = 0;
+        const row = el("div", "row");
+        if (p.source !== "upload" && !p.pdfUrl) {
+          const up = el("button", "link", "上传 PDF");
+          up.addEventListener("click", (e) => { e.stopPropagation(); $("attachPdf").dataset.target = p.id; $("attachPdf").click(); });
+          row.append(up);
+        }
         const del = el("button", "link-del", "删除");
         del.addEventListener("click", (e) => { e.stopPropagation(); removePaper(p.id); });
-        item.append(el("strong", "", p.title || "（正在读取标题…）"), el("span", "quiet", p.meta || ""), del);
-        item.addEventListener("click", () => openPaper(p.id));
-        item.addEventListener("keydown", (e) => { if (e.key === "Enter") openPaper(p.id); });
-        box.append(item);
+        row.append(del);
+        it.append(el("strong", "", p.title || "（正在读取标题…）"), el("span", "quiet", p.meta || ""), row);
+        it.addEventListener("click", () => openPaper(p.id));
+        it.addEventListener("keydown", (e) => { if (e.key === "Enter") openPaper(p.id); });
+        return it;
+      };
+      const pk = packs();
+      pk.forEach((g) => {
+        const inPack = g.paperIds.map((id) => list.find((p) => p.id === id)).filter(Boolean);
+        if (!inPack.length) return;
+        box.append(el("div", "lib-group", `导师 · ${g.name}`));
+        inPack.forEach((p) => box.append(item(p)));
       });
+      const rest = list.filter((p) => !pk.some((g) => g.paperIds.includes(p.id)));
+      if (pk.length && rest.length) box.append(el("div", "lib-group", "其他论文"));
+      rest.forEach((p) => box.append(item(p)));
     }
     function openLibrary(focusAdd = false) {
       document.body.classList.add("lib-open");
@@ -608,6 +966,13 @@
         const bytes = await idbGet(id).catch(() => null);
         if (!bytes) { showToast("这篇上传的 PDF 不在这台设备上了，请重新上传。"); return; }
         await loadPdf({ data: new Uint8Array(bytes) });
+      } else if (!p.pdfUrl) {
+        pdfDoc = null; pagesBox.innerHTML = "";
+        $("pageCounter").textContent = "没有 PDF";
+        const msg = el("div", "quiet", "这篇没有公开的 PDF。下载后在论文列表里点“上传 PDF”，就能接着读。");
+        msg.style.cssText = "text-align:center;padding:80px 20px;font-size:14px";
+        pagesBox.append(msg);
+        renderAll();
       } else {
         await loadPdf({ url: p.pdfUrl });
       }
@@ -638,6 +1003,8 @@
         pdfDoc = doc; pageInfo = info;
         textCache.clear(); rendered.clear(); renderTasks.clear();
         lines = new Map(); headings = []; figures = new Map(); figPageCache.clear(); thumbCache.clear();
+        refs = []; refStart = null; refStyle = null; refByNum = new Map(); refByKey = new Map(); s2RefsPromise = null;
+        paraCache.clear(); transQueue.length = 0;
         currentPage = 1;
         userZoomed = false;
         buildPages();
@@ -652,7 +1019,9 @@
         if (token !== loadToken) return;
         console.error(error);
         $("pageCounter").textContent = "加载失败";
-        showToast("PDF 加载失败。有的网站不允许网页直接读取，可以先下载，再用“上传 PDF”。");
+        showToast(navigator.onLine
+          ? "PDF 加载失败。有的网站不允许网页直接读取，可以先下载，再用“上传 PDF”。"
+          : "现在离线，这篇要联网才能打开。上传过的 PDF 可以离线读。");
       }
     }
 
@@ -665,7 +1034,7 @@
         const wrap = el("div", "page-wrap"); wrap.dataset.page = n;
         const page = el("div", "page");
         page.append(el("span", "pnum", String(n)), document.createElement("canvas"), el("div", "hl-layer"), el("div", "text-layer"), el("div", "dot-layer"));
-        wrap.append(page, el("div", "margin"));
+        wrap.append(page, el("div", "margin"), el("div", "trans-col"));
         pagesBox.append(wrap);
       }
       observer = new IntersectionObserver((entries) => {
@@ -682,7 +1051,10 @@
       document.body.classList.toggle("has-margin", wide);
       if (!userZoomed) {
         const maxW = Math.max(...pageInfo.slice(1).map((p) => p.w));
-        const room = read.clientWidth - (wide ? 290 + 28 + 56 : 28);
+        // In translation mode the column takes about 40% of the reading area, so long paragraphs stay close to their source.
+        const side = document.body.classList.contains("trans-on") ? Math.round(Math.max(380, Math.min(640, read.clientWidth * 0.42))) : 290;
+        document.body.style.setProperty("--trans-w", `${side}px`);
+        const room = read.clientWidth - (wide ? side + 28 + 56 : 28);
         scale = Math.max(.5, Math.min(1.6, room / maxW));
       }
       const keep = currentPage;
@@ -692,6 +1064,7 @@
         page.style.width = `${Math.floor(pageInfo[n].w * scale)}px`;
         page.style.height = `${Math.floor(pageInfo[n].h * scale)}px`;
         renderMargin(n);
+        if (transOn()) renderTransCol(n);
       }
       $("zoomLabel").textContent = `${Math.round(scale * 100)}%`;
       observer.disconnect();
@@ -719,6 +1092,7 @@
       rendered.set(n, drawScale);
       await buildTextLayer(n);
       drawHighlights(n);
+      if (transOn()) { renderTransCol(n); if (state.transAuto !== false) queueTranslate(n); }
     }
 
     function unrenderPage(n) {
@@ -786,20 +1160,36 @@
           span.style.transform = `${angle ? `rotate(${angle}rad) ` : ""}scaleX(${scaleX})`;
           if (p.cls === "term") span.dataset.term = p.key;
           if (p.cls === "ref") { span.dataset.kind = p.kind; span.dataset.num = p.num; }
+          if (p.cls === "cite") { if (p.nums) span.dataset.nums = p.nums.join(","); else span.dataset.key = p.key; }
           layer.append(span);
         });
         if (item.hasEOL) layer.append(document.createElement("br"));
       });
+      layer.append(el("div", "end-pad"));
     }
 
     function findMarks(str, n, top) {
       const marks = [];
       if (termRegex) for (const m of str.matchAll(termRegex)) marks.push({ s: m.index, e: m.index + m[0].length, cls: "term", key: m[0] });
+      const free = (s, e) => !marks.some((k) => s < k.e && e > k.s);
       if (!isCaptionLine(n, top)) {
         for (const m of str.matchAll(REF_RE)) {
           const s = m.index, e = s + m[0].length;
-          if (marks.some((k) => s < k.e && e > k.s)) continue;
+          if (!free(s, e)) continue;
           marks.push({ s, e, cls: "ref", kind: /^tab/i.test(m[1]) ? "table" : "figure", num: m[2] });
+        }
+      }
+      if (refs.length && !inRefSection(n, top)) {
+        if (refStyle === "numeric") {
+          for (const m of str.matchAll(CITE_NUM_RE)) {
+            const nums = expandNums(m[1]).filter((k) => refByNum.has(k));
+            if (nums.length && free(m.index, m.index + m[0].length)) marks.push({ s: m.index, e: m.index + m[0].length, cls: "cite", nums });
+          }
+        } else {
+          for (const m of str.matchAll(CITE_AY_RE)) {
+            const key = `${m[1].toLowerCase()}|${m[2]}`;
+            if (refByKey.has(key) && free(m.index, m.index + m[0].length)) marks.push({ s: m.index, e: m.index + m[0].length, cls: "cite", key });
+          }
         }
       }
       return marks.sort((a, b) => a.s - b.s);
@@ -820,8 +1210,11 @@
       headings = await outlineHeadings();
       if (headings.length < 3) headings = textHeadings();
       figures = findFigures();
+      parseReferences();
+      paraCache.clear();
       renderAll();
       await rebuildTextLayers();
+      if (transOn()) for (const n of rendered.keys()) { renderTransCol(n); if (state.transAuto !== false) queueTranslate(n); }
     }
 
     function groupLines(n, items) {
@@ -835,17 +1228,40 @@
         if (!rows.has(key)) rows.set(key, []);
         rows.get(key).push({ str: i.str, x: tx[4], w: i.width, size, base: tx[5] });
       });
-      return [...rows.values()].map((row) => {
+      const out = [];
+      rows.forEach((row) => {
         row.sort((a, b) => a.x - b.x);
-        const size = Math.max(...row.map((r) => r.size));
-        const text = row.reduce((t, r, k) => {
-          if (!k) return r.str;
-          const prev = row[k - 1];
-          return t + (r.x - (prev.x + prev.w) > r.size * 0.12 && !t.endsWith(" ") && !r.str.startsWith(" ") ? " " : "") + r.str;
-        }, "").replace(/\s+/g, " ").trim();
-        const base = Math.max(...row.map((r) => r.base));
-        return { text, size, top: base - size * 0.8, x: row[0].x, width: row[row.length - 1].x + row[row.length - 1].w - row[0].x };
-      }).sort((a, b) => a.top - b.top);
+        // A wide gap means the next piece belongs to the other column: start a new line there.
+        let part = [row[0]];
+        const flush = () => {
+          const size = Math.max(...part.map((r) => r.size));
+          const text = part.reduce((t, r, k) => {
+            if (!k) return r.str;
+            const prev = part[k - 1];
+            return t + (r.x - (prev.x + prev.w) > r.size * 0.12 && !t.endsWith(" ") && !r.str.startsWith(" ") ? " " : "") + r.str;
+          }, "").replace(/\s+/g, " ").trim();
+          const base = Math.max(...part.map((r) => r.base));
+          if (text) out.push({ text, size, top: base - size * 0.8, x: part[0].x, width: part[part.length - 1].x + part[part.length - 1].w - part[0].x });
+        };
+        for (let k = 1; k < row.length; k++) {
+          const prev = row[k - 1], cur = row[k];
+          if (cur.x - (prev.x + prev.w) > Math.max(cur.size, prev.size) * 1.1) { flush(); part = []; }
+          part.push(cur);
+        }
+        flush();
+      });
+      return out.sort((a, b) => a.top - b.top || a.x - b.x);
+    }
+
+    // Reading order for a page: in a two-column layout, the whole left column comes before the right one.
+    function readingOrder(n) {
+      const ls = lines.get(n) || [];
+      const w = pageInfo[n].w;
+      const narrow = ls.filter((l) => l.width < w * 0.5 && l.text.length > 25);
+      const right = narrow.filter((l) => l.x > w * 0.45);
+      if (right.length < 5) return ls;
+      const col = (l) => (l.x > w * 0.45 ? 1 : 0);
+      return [...ls].sort((a, b) => col(a) - col(b) || a.top - b.top);
     }
 
     async function outlineHeadings() {
@@ -871,15 +1287,15 @@
     }
 
     const NAMED = /^(?:(?:\d{1,2}|[IVX]{1,4})\.?\s+)?(abstract|summary|introduction|background|related work|methods?|materials and methods|methodology|experiments?|results(?: and discussion)?|discussion|conclusions?|limitations|references|acknowledge?ments?)\s*:?$/i;
-    const NUMBERED = /^(\d{1,2}(?:\.\d{1,2}){0,2})\.?\s+([A-Z][^]{1,80})$/;
+    const NUMBERED = /^([1-9]\d?(?:\.\d{1,2}){0,2})\.?\s+([A-Z][^]{1,80})$/;
     function textHeadings() {
       const out = [];
-      lines.forEach((ls, page) => ls.forEach((l) => {
+      lines.forEach((_, page) => readingOrder(page).forEach((l) => {
         const named = l.text.match(NAMED);
         const numbered = !named && l.text.match(NUMBERED);
-        if (named && l.size >= bodySize * 0.95) out.push({ title: l.text, page, top: l.top, level: 1 });
+        if (named && l.size >= bodySize * 0.95) out.push({ title: l.text, page, top: l.top, x: l.x, level: 1 });
         else if (numbered && l.size >= bodySize * 0.98 && l.text.split(" ").length <= 12 && !/[.,;]$/.test(l.text) && Number(numbered[1].split(".")[0]) <= 20) {
-          out.push({ title: l.text, page, top: l.top, level: numbered[1].includes(".") ? 2 : 1 });
+          out.push({ title: l.text, page, top: l.top, x: l.x, level: numbered[1].includes(".") ? 2 : 1 });
         }
       }));
       return out.filter((h, i) => !i || h.title !== out[i - 1].title);
@@ -926,6 +1342,7 @@
     function markCurrentSection(line) {
       let idx = -1;
       headings.forEach((h, i) => { const w = wrapOf(h.page); if (w && w.offsetTop + h.top * scale <= line + 10) idx = i; });
+      dwellIdx = idx;
       document.querySelectorAll(".toc-row").forEach((r) => r.classList.toggle("here", Number(r.dataset.i) === idx));
     }
 
@@ -937,15 +1354,20 @@
       const layer = wrap.querySelector(".hl-layer");
       layer.innerHTML = "";
       state.annotations.filter((a) => a.page === n).forEach((a) => a.rects.forEach((r) => {
-        const d = el("div", a.kind === "ai" ? "ai" : "");
+        const d = el("div", `${a.kind === "ai" ? "ai" : ""}${a.region ? " region" : ""}`);
         d.dataset.id = a.id;
+        Object.assign(d.style, { left: `${r.x * scale}px`, top: `${r.y * scale}px`, width: `${r.w * scale}px`, height: `${r.h * scale}px` });
+        layer.append(d);
+      }));
+      (state.skim || []).filter((k) => k.page === n && state.skimShow?.[k.label] !== false).forEach((k) => k.rects.forEach((r) => {
+        const d = el("div", `skim ${k.label}`);
         Object.assign(d.style, { left: `${r.x * scale}px`, top: `${r.y * scale}px`, width: `${r.w * scale}px`, height: `${r.h * scale}px` });
         layer.append(d);
       }));
     }
 
     function noteCard(a) {
-      const card = el("div", `note ${a.kind}`);
+      const card = el("div", `note ${a.kind}${a.parentId ? " thread" : ""}`);
       card.dataset.id = a.id;
       const label = a.kind === "ai" ? `问 AI · ${a.question || ""}` : a.kind === "highlight" ? "高亮" : "我的批注";
       card.append(el("small", "", `${label} · p.${a.page}`));
@@ -955,6 +1377,7 @@
         const text = el("div", "text");
         text.innerHTML = mdLite(a.text);
         card.append(text);
+        typesetMath(text);
         // Long answers fold to a few lines so the cards below stay near their own paragraphs.
         if (a.text.length > 140 || a.text.split("\n").length > 6) {
           text.classList.add("clamp");
@@ -965,6 +1388,18 @@
           });
           acts.append(more);
         }
+      }
+      if (a.kind === "ai" && a.text) {
+        const more = el("button", "", "再问");
+        more.addEventListener("click", () => {
+          if (card.querySelector(".follow")) return;
+          const wrap = el("div", "follow");
+          const input = document.createElement("input"); input.placeholder = "接着问…";
+          const go = () => { if (input.value.trim()) { const q = input.value.trim(); wrap.remove(); askFollowup(a, q, card); } };
+          input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+          wrap.append(input); card.append(wrap); input.focus();
+        });
+        acts.append(more);
       }
       const edit = el("button", "", a.text ? "编辑" : "写批注");
       edit.addEventListener("click", () => editNote(card, a));
@@ -997,7 +1432,12 @@
       const margin = wrap.querySelector(".margin");
       const dots = wrap.querySelector(".dot-layer");
       margin.innerHTML = ""; dots.innerHTML = "";
-      state.annotations.filter((a) => a.page === n).sort((a, b) => anchorY(a) - anchorY(b)).forEach((a) => {
+      const kindRank = (a) => (a.parentId ? 2 : a.kind === "ai" ? 1 : 0);
+      const onPage = state.annotations.filter((a) => a.page === n).sort((a, b) => anchorY(a) - anchorY(b) || kindRank(a) - kindRank(b));
+      if (!onPage.length && n === 1 && state.pass === "read" && !state.annotations.length) {
+        margin.append(el("div", "margin-hint", "选中一句话，写下你的理解。批注会贴在这里，和原文对齐。"));
+      }
+      onPage.forEach((a) => {
         margin.append(noteCard(a));
         const dot = el("button", a.kind === "ai" ? "dot-ai" : "dot-note");
         dot.style.top = `${anchorY(a) * scale}px`;
@@ -1033,7 +1473,7 @@
 
     function addAnnotation(kind, text, extra = {}) {
       if (!pending) return null;
-      const a = { id: uid(), kind, page: pending.page, rects: pending.rects, quote: pending.quote, text, ...extra, created: new Date().toISOString() };
+      const a = { id: uid(), kind, page: pending.page, rects: pending.rects, quote: pending.quote || (pending.region ? "（框选区域）" : ""), region: !!pending.region, text, ...extra, created: new Date().toISOString() };
       state.annotations.push(a);
       save(); drawHighlights(a.page); renderMargin(a.page);
       window.getSelection()?.removeAllRanges();
@@ -1078,19 +1518,115 @@
       return { page: Number(wrap.dataset.page), rects, quote, box: range.getBoundingClientRect() };
     }
 
+    // Dragging over the blank space between lines used to jump the selection to the end of the page.
+    // A pad fills that space while selecting and follows the moving end, so the selection stays where the pointer is.
+    let prevRange = null;
+    pagesBox.addEventListener("mousedown", (e) => {
+      const layer = e.target.closest?.(".text-layer");
+      if (!layer || e.button !== 0) return;
+      if (e.target.tagName === "SPAN") { layer.classList.add("selecting"); return; }
+      startRegion(e, layer);
+    });
+    document.addEventListener("mouseup", () => {
+      document.querySelectorAll(".text-layer.selecting").forEach((layer) => {
+        layer.classList.remove("selecting");
+        const pad = layer.querySelector(".end-pad");
+        if (pad && pad !== layer.lastChild) layer.append(pad);
+      });
+      prevRange = null;
+    });
+    document.addEventListener("selectionchange", () => {
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return;
+      const range = sel.getRangeAt(0);
+      const moveStart = prevRange && (range.compareBoundaryPoints(Range.END_TO_END, prevRange) === 0 || range.compareBoundaryPoints(Range.START_TO_END, prevRange) === 0);
+      let anchor = moveStart ? range.startContainer : range.endContainer;
+      if (anchor.nodeType === Node.TEXT_NODE) anchor = anchor.parentNode;
+      const layer = anchor?.closest?.(".text-layer.selecting");
+      if (layer && anchor !== layer) {
+        const pad = layer.querySelector(".end-pad");
+        if (pad && anchor.parentElement === layer) layer.insertBefore(pad, moveStart ? anchor : anchor.nextSibling);
+      }
+      prevRange = range.cloneRange();
+    });
+
+    // Box select: drag on blank space to frame a figure, table or formula and ask about it.
+    function startRegion(e, layer) {
+      e.preventDefault();
+      window.getSelection()?.removeAllRanges();
+      hidePops();
+      const pageEl = layer.closest(".page");
+      const n = Number(layer.closest(".page-wrap").dataset.page);
+      const pr = pageEl.getBoundingClientRect();
+      const x0 = e.clientX - pr.left, y0 = e.clientY - pr.top;
+      const box = el("div", "region-box");
+      pageEl.append(box);
+      const clamp = (v, max) => Math.max(0, Math.min(max, v));
+      let rect = null;
+      const move = (ev) => {
+        const x1 = clamp(ev.clientX - pr.left, pr.width), y1 = clamp(ev.clientY - pr.top, pr.height);
+        rect = { x: Math.min(x0, x1), y: Math.min(y0, y1), w: Math.abs(x1 - x0), h: Math.abs(y1 - y0) };
+        Object.assign(box.style, { left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.w}px`, height: `${rect.h}px` });
+      };
+      const up = () => {
+        document.removeEventListener("mousemove", move);
+        document.removeEventListener("mouseup", up);
+        box.remove();
+        if (!rect || rect.w < 10 || rect.h < 10) return;
+        const r1 = { x: rect.x / scale, y: rect.y / scale, w: rect.w / scale, h: rect.h / scale };
+        const text = textInRegion(n, r1);
+        pending = { page: n, rects: [r1], quote: text.slice(0, 2000), region: true,
+          box: { left: pr.left + rect.x, top: pr.top + rect.y, right: pr.left + rect.x + rect.w, bottom: pr.top + rect.y + rect.h } };
+        showSelPop();
+      };
+      document.addEventListener("mousemove", move);
+      document.addEventListener("mouseup", up);
+    }
+    function textInRegion(n, r) {
+      const wrap = wrapOf(n); if (!wrap) return "";
+      const pr = wrap.querySelector(".page").getBoundingClientRect();
+      const inside = [...wrap.querySelectorAll(".text-layer span")].map((sp) => {
+        const b = sp.getBoundingClientRect();
+        return { t: sp.textContent, x: (b.left + b.width / 2 - pr.left) / scale, y: (b.top + b.height / 2 - pr.top) / scale, h: b.height / scale };
+      }).filter((p) => p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h).sort((a, b) => a.y - b.y || a.x - b.x);
+      return inside.reduce((out, p, i) => out + (i && Math.abs(p.y - inside[i - 1].y) > p.h * 0.5 ? "\n" : i ? " " : "") + p.t, "").trim();
+    }
+    async function regionImage(n, r) {
+      const src = await pageCanvas(n);
+      const k = src.width / pageInfo[n].w;
+      const fit = Math.min(1, 1600 / (r.w * k));
+      const c = document.createElement("canvas");
+      c.width = Math.round(r.w * k * fit); c.height = Math.round(r.h * k * fit);
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(src, r.x * k, r.y * k, r.w * k, r.h * k, 0, 0, c.width, c.height);
+      return c.toDataURL("image/jpeg", 0.85);
+    }
+    const canSee = () => $("visionInput").checked;
+    // The same popover serves text selections and boxes; a box without text cannot be translated or saved as a term.
+    function showSelPop() {
+      $("termPop").style.display = "none";
+      const region = !!pending.region;
+      $("selQuote").textContent = region ? `框选区域 · p.${pending.page}${pending.quote ? `　${pending.quote.replace(/\s+/g, " ")}` : "（没有可选的文字）"}` : pending.quote;
+      document.querySelector('#selPop [data-act="term"]').classList.toggle("hidden", region);
+      document.querySelector('#selPop [data-act="translate"]').classList.toggle("hidden", region && !pending.quote);
+      document.querySelector('#selPop [data-act="ask"]').textContent = region ? "问 AI（这块）" : "问 AI";
+      $("selBody").innerHTML = "";
+      placePop($("selPop"), pending.box, 440);
+    }
+
     pagesBox.addEventListener("mouseup", (event) => {
       setTimeout(() => {
         const info = selectionInfo();
         if (!info) {
           const ref = event.target.closest?.(".ref");
           if (ref) showFigure(ref.dataset.kind, ref.dataset.num, ref.getBoundingClientRect());
+          const cite = event.target.closest?.(".cite");
+          if (cite) showCitation(cite);
           return;
         }
         pending = info;
-        $("termPop").style.display = "none";
-        $("selQuote").textContent = info.quote;
-        $("selBody").innerHTML = "";
-        placePop($("selPop"), info.box, 420);
+        showSelPop();
       }, 0);
     });
 
@@ -1102,6 +1638,7 @@
       body.innerHTML = "";
       if (act === "highlight") { addAnnotation("highlight", ""); hidePops(); return; }
       if (act === "term") { addTerm(pending.quote); hidePops(); return; }
+      if (act === "formula") { await explainFormula(); return; }
       if (act === "note") {
         const box = document.createElement("textarea"); box.rows = 3; box.placeholder = "写下你的理解或疑问";
         const ok = el("button", "btn dark", "保存");
@@ -1119,7 +1656,7 @@
         row.append(keep);
         if (apiKey()) {
           const better = el("button", "btn", "让 AI 翻得更准");
-          better.addEventListener("click", () => askAboutSelection("把这段翻译成自然的中文，保留关键术语的英文，并简单解释难点。"));
+          better.addEventListener("click", () => askAboutSelection(`把这段翻译成自然的${lang().name}，保留关键术语的英文，并简单解释难点。`));
           row.append(better);
         }
         body.append(row);
@@ -1136,19 +1673,26 @@
     }
 
     async function askAboutSelection(question) {
-      const q = question || "解释这段在说什么，写给刚接触这个领域的人";
+      const region = !!pending.region;
+      const q = question || (region ? "解释这块区域在讲什么（可能是图、表或公式），写给刚接触这个领域的人" : "解释这段在说什么，写给刚接触这个领域的人");
       const pageText = await pageTextOf(pending.page);
+      const withImage = region && canSee() && apiKey();
+      if (region && !pending.quote && !withImage) {
+        $("selBody").textContent = apiKey() ? "这块里没有可读的文字，当前模型又看不了图。可以在 ⚙︎ 里换成能看图的模型并打开“模型能看图”，或者改为划选文字再问。" : "这块里没有可读的文字。填了能看图的 AI key 后，可以直接问框里的图。";
+        return;
+      }
       const prompt = `${q}
 
 论文：${paper?.title || ""}
 所在页：p.${pending.page}
-选中的原文：
-${pending.quote}
+${region ? `读者在这一页框选了一块区域。${withImage ? "附图是这块区域的截图。" : ""}框里能读到的文字（顺序可能乱）：
+${pending.quote || "（没有可选的文字）"}` : `选中的原文：
+${pending.quote}`}
 
 这一页的原文（供参考）：
 ${pageText.slice(0, 3500)}
 
-要求：中文回答，关键术语保留英文；先用一两句话直接回答，再分点补充，全文不超过 250 字；只根据原文说话，原文没写的要说明是你的推测；结尾写“依据：p.页码”。`;
+要求：用${lang().name}回答，关键术语保留英文；先用一两句话直接回答，再分点补充，全文不超过 250 字；只根据原文说话，原文没写的要说明是你的推测；结尾写“依据：p.页码”。`;
       const body = $("selBody");
       if (!apiKey()) {
         await copyText(prompt, "没填 AI key，prompt 已复制。");
@@ -1157,8 +1701,8 @@ ${pageText.slice(0, 3500)}
       }
       body.textContent = "AI 思考中…";
       try {
-        const answer = await callAi(prompt);
-        addAnnotation("ai", answer, { question: question || "解释这段" });
+        const answer = await callAi(prompt, undefined, withImage ? await regionImage(pending.page, pending.rects[0]) : null);
+        addAnnotation("ai", answer, { question: question || (region ? "解释这块" : "解释这段") });
         hidePops();
       } catch (e) {
         await copyText(prompt, "AI 请求失败，prompt 已复制。");
@@ -1293,7 +1837,7 @@ ${pageText.slice(0, 3500)}
       const text = cleanSelection(raw).slice(0, 1800);
       const isWord = /^[A-Za-z][A-Za-z'-]{0,40}$/.test(text);
       try {
-        const data = await fetchJson(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=zh-CN&dt=t&dt=bd&dt=rm&q=${encodeURIComponent(text)}`);
+        const data = await fetchJson(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${lang().tl}&dt=t&dt=bd&dt=rm&q=${encodeURIComponent(text)}`);
         const main = (data[0] || []).filter((row) => row && row[0]).map((row) => row[0]).join("");
         const out = [main];
         if (isWord) {
@@ -1304,7 +1848,7 @@ ${pageText.slice(0, 3500)}
         return { main, text: out.filter(Boolean).join("\n") };
       } catch {
         try {
-          const data = await fetchJson(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 480))}&langpair=en|zh-CN`);
+          const data = await fetchJson(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 480))}&langpair=en|${lang().tl}`);
           const main = data.responseData.translatedText;
           return { main, text: `${main}${text.length > 480 ? "\n（备用翻译只翻了前 480 个字符）" : ""}` };
         } catch { return { main: "", text: "翻译服务连不上（可能没联网）。" }; }
@@ -1313,7 +1857,7 @@ ${pageText.slice(0, 3500)}
 
     // ---------- AI ----------
     const apiKey = () => $("apiKey").value.trim();
-    async function callAi(prompt, instructions = "You are a careful bilingual paper-reading assistant. Answer in Chinese, keep key English terms, and separate what the paper shows from your own interpretation.") {
+    async function callAi(prompt, instructions = `You are a careful paper-reading assistant. Answer in ${lang().en}, keep key English terms, and separate what the paper shows from your own interpretation.`, image = null) {
       const provider = $("providerInput").value;
       const base = (provider === "custom" ? $("baseInput").value.trim() : PROVIDERS[provider].base).replace(/\/+$/, "");
       const model = $("modelInput").value.trim() || PROVIDERS[provider].model;
@@ -1327,8 +1871,8 @@ ${pageText.slice(0, 3500)}
           method: "POST", signal: controller.signal,
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey()}` },
           body: JSON.stringify(useResponses
-            ? { model, input: prompt, instructions }
-            : { model, messages: [{ role: "system", content: instructions }, { role: "user", content: prompt }] })
+            ? { model, instructions, input: image ? [{ role: "user", content: [{ type: "input_text", text: prompt }, { type: "input_image", image_url: image }] }] : prompt }
+            : { model, messages: [{ role: "system", content: instructions }, { role: "user", content: image ? [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: image } }] : prompt }] })
         });
         if (!response.ok) throw new Error(`${response.status} ${(await response.text()).slice(0, 200)}`);
         const data = await response.json();
@@ -1356,7 +1900,7 @@ ${pageText.slice(0, 3500)}
     async function askWholePaper() {
       const q = $("askPaper").value.trim();
       if (!q || !pdfDoc) return;
-      const prompt = `${q}\n\n论文：${paper?.title || ""}\n全文（按页标注）：\n${await paperText(60000)}\n\n要求：中文回答，关键术语保留英文；只根据原文，引用时写“p.页码”。`;
+      const prompt = `${q}\n\n论文：${paper?.title || ""}\n全文（按页标注）：\n${await paperText(60000)}\n\n要求：用${lang().name}回答，关键术语保留英文；只根据原文，引用时写“p.页码”。`;
       if (!apiKey()) { await copyText(prompt, "没填 AI key，prompt 已复制。"); return; }
       $("askPaperBtn").textContent = "…";
       try { addPinned(await callAi(prompt), { question: q }); $("askPaper").value = ""; showToast("回答已贴在当前页旁边。"); }
@@ -1371,6 +1915,8 @@ ${pageText.slice(0, 3500)}
       document.querySelectorAll(".passes button").forEach((b) => b.classList.toggle("is-on", b.dataset.pass === pass));
       save();
       hidePops();
+      document.body.classList.add("switching"); setTimeout(() => document.body.classList.remove("switching"), 260);
+      if (pass === "recap") { renderNudge(); renderRetell(); renderFinish(); }
       if (relayout && pdfDoc) requestAnimationFrame(applyScale);
     }
 
@@ -1381,6 +1927,12 @@ ${pageText.slice(0, 3500)}
       document.querySelectorAll("[data-card]").forEach((f) => { f.value = state.card[f.dataset.card] || ""; });
       $("q1").placeholder = state.skeleton.answer ? `第一遍时你写的：${state.skeleton.answer}` : "";
       renderFeedback();
+      renderSkim();
+      renderInterview();
+      $("spokenText").value = ""; renderSpoken(); renderPhrases(); renderFinish(); renderRetell(); renderNudge();
+      loadTrans();
+      document.body.classList.toggle("trans-on", !!state.transOn);
+      $("transToggle").classList.toggle("is-on", !!state.transOn);
       $("mdOut").textContent = "";
     }
 
@@ -1414,8 +1966,8 @@ ${pageText.slice(0, 3500)}
 
 规则：
 - 每条只给一个判断：ok（与原文一致）、missing（方向对，但漏了原文里重要的一点）、wrong（与原文不符，或没写出有意义的内容）。
-- hint：给读者的提示，一句中文。ok 时说对上了原文哪一部分；missing／wrong 时只说缺的是哪一类东西、该去哪一节看（比如“还没写研究对象和用了什么分析方法，去看摘要的 Methods”），不要写出原文的具体内容、数字或结论，让读者自己回去找。
-- answer：原文在这一点上实际怎么说，一两句中文，可以带关键数字。读者点“看原文怎么说”才会看到。
+- hint：给读者的提示，一句话，用${lang().name}。ok 时说对上了原文哪一部分；missing／wrong 时只说缺的是哪一类东西、该去哪一节看（比如“还没写研究对象和用了什么分析方法，去看摘要的 Methods”），不要写出原文的具体内容、数字或结论，让读者自己回去找。
+- answer：原文在这一点上实际怎么说，一两句，用${lang().name}，可以带关键数字。读者点“看原文怎么说”才会看到。
 - page：最相关的原文页码（数字），找不到写 null。hint 和 answer 里不要再写页码。
 - 只输出 JSON：{"q1":{"verdict":"","hint":"","answer":"","page":null},"q2":{...},"q3":{...}}
 
@@ -1433,7 +1985,7 @@ ${await paperText(60000)}`;
       }
       $("recapStatus").textContent = "正在对照原文…";
       try {
-        const out = parseJson(await callAi(prompt, "You check a reader's summary against the paper. Reply with JSON only. Notes in Chinese."));
+        const out = parseJson(await callAi(prompt, `You check a reader's summary against the paper. Reply with JSON only. Write hint and answer in ${lang().en}.`));
         if (!out) throw new Error("没有拿到可读的结果");
         ["q1", "q2", "q3"].forEach((k) => { if (out[k]) state.feedback[k] = out[k]; });
         save(); renderFeedback();
@@ -1449,12 +2001,12 @@ ${await paperText(60000)}`;
       if (!c.one) c.one = r.q1 || state.skeleton.answer;
       if (!c.method) c.method = r.q2;
       if (!c.limit) c.limit = r.q3;
-      save(); restoreFields();
+      save(); restoreFields(); markFinished();
     }
     async function draftCard() {
       const prompt = `根据读者自己的复述和论文原文，起草一张面谈用的“能聊卡”。尽量保留读者的原话，只修正与原文不符的地方，并补上原文里关键的数字或名词。
 
-只输出 JSON：{"one":"一句话概括","method":"方法（关键设计）","limit":"局限","ask":"一个可以问研究者的具体问题"}，每项不超过 60 字，中文。
+只输出 JSON：{"one":"一句话概括","method":"方法（关键设计）","limit":"局限","ask":"一个可以问研究者的具体问题"}，每项不超过 60 字，用${lang().name}。${lang().code === "ja" ? "ask 用面谈时可以直接说出口的敬语（です・ます体，如「〜についてお伺いしてもよろしいでしょうか」）。" : ""}
 
 读者的复述：
 1 ${state.recap.q1}
@@ -1467,10 +2019,10 @@ ${await paperText(50000)}`;
       if (!apiKey()) { await copyText(prompt, "没填 AI key，prompt 已复制。"); return; }
       $("draftCard").textContent = "起草中…";
       try {
-        const out = parseJson(await callAi(prompt, "Reply with JSON only, in Chinese."));
+        const out = parseJson(await callAi(prompt, `Reply with JSON only, in ${lang().en}.`));
         if (!out) throw new Error("no json");
         ["one", "method", "limit", "ask"].forEach((k) => { if (out[k]) state.card[k] = out[k]; });
-        save(); restoreFields();
+        save(); restoreFields(); markFinished();
       } catch { await copyText(prompt, "请求失败，prompt 已复制。"); }
       finally { $("draftCard").textContent = "AI 起草"; }
     }
@@ -1524,7 +2076,22 @@ ${notes || "-"}
 ## 术语
 
 ${terms || "-"}
-`;
+${state.spoken?.feedback ? `
+## 讲给我听
+
+${state.spoken.text}
+
+- 总评：${state.spoken.feedback.overall || ""}
+- 下次先补：${state.spoken.feedback.next || ""}
+` : ""}${state.phrases?.length ? `
+## 值得学的表达
+
+${state.phrases.map((p) => `- **${p.en}** — ${p.use}${p.say ? `（${p.say}）` : ""}`).join("\n")}
+` : ""}${state.interview?.questions?.length ? `
+## 模拟面谈
+
+${state.interview.questions.map((q, i) => `**问：** ${q}\n\n**答：** ${state.interview.answers[i] ?? "（未答）"}${state.interview.feedback[i] ? `\n\n- 点评：${state.interview.feedback[i].hint}\n- 示范：${state.interview.feedback[i].better}` : ""}`).join("\n\n")}
+` : ""}`;
     }
     function fileName() { return (paper?.title || "paper").replace(/[\\/:*?"<>|#^[\]]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80); }
     async function toObsidian() {
@@ -1547,6 +2114,1371 @@ ${terms || "-"}
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     }
 
+    // ---------- output language ----------
+    const LANG_KEY = "noesis.reader.v4.lang";
+    const LANGS = {
+      zh: { code: "zh", name: "中文", en: "Chinese", tl: "zh-CN" },
+      ja: { code: "ja", name: "日语", en: "Japanese", tl: "ja" },
+      en: { code: "en", name: "英文", en: "English", tl: "en" }
+    };
+    const lang = () => LANGS[$("langInput").value] || LANGS.zh;
+
+    // ---------- search the paper, notes and terms ----------
+    let searchHits = [];
+    let searchIdx = -1;
+    function openSearch() {
+      $("searchBar").classList.add("is-on");
+      $("searchInput").focus(); $("searchInput").select();
+    }
+    function closeSearch() {
+      $("searchBar").classList.remove("is-on");
+      document.querySelectorAll(".text-layer span.hit").forEach((x) => x.classList.remove("hit"));
+    }
+    function runSearch() {
+      const q = $("searchInput").value.trim();
+      searchHits = []; searchIdx = -1;
+      if (q.length >= 2 && pdfDoc) {
+        const test = (t) => t && t.toLowerCase().includes(q.toLowerCase());
+        lines.forEach((ls, page) => ls.forEach((l) => { if (test(l.text)) searchHits.push({ type: "原文", page, top: l.top, text: l.text }); }));
+        searchHits.sort((a, b) => a.page - b.page || a.top - b.top);
+        state.annotations.forEach((a) => { if (test(a.text) || test(a.quote)) searchHits.push({ type: "批注", page: a.page, top: anchorY(a), text: a.text || a.quote }); });
+        state.terms.forEach((t) => { if (test(t.term) || test(t.meaning)) searchHits.push({ type: "术语", term: t, text: `${t.term}：${t.meaning || ""}` }); });
+      }
+      renderSearch(q);
+      if (searchHits.length) gotoHit(0);
+    }
+    function renderSearch(q) {
+      const box = $("searchResults"); box.innerHTML = "";
+      $("searchCount").textContent = !q || q.length < 2 ? "" : !lines.size ? "正在读取全文…" : searchHits.length ? `${searchIdx + 1}/${searchHits.length}` : "没找到";
+      const re = q ? new RegExp(escRe(q), "gi") : null;
+      searchHits.slice(0, 80).forEach((h, i) => {
+        const b = el("button", i === searchIdx ? "is-on" : "");
+        const safe = h.text.replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[ch]);
+        b.innerHTML = `<small>${h.type}${h.page ? ` · p.${h.page}` : ""}</small>${re ? safe.replace(re, (m) => `<mark>${m}</mark>`) : safe}`;
+        b.addEventListener("click", () => gotoHit(i));
+        box.append(b);
+      });
+    }
+    async function gotoHit(i) {
+      if (!searchHits.length) return;
+      searchIdx = (i + searchHits.length) % searchHits.length;
+      const h = searchHits[searchIdx];
+      const q = $("searchInput").value.trim();
+      renderSearch(q);
+      $("searchResults").querySelector(".is-on")?.scrollIntoView({ block: "nearest" });
+      if (h.type === "术语") {
+        // Jump to the first place the term appears in the paper.
+        const first = [...lines.entries()].flatMap(([page, ls]) => ls.map((l) => ({ page, l }))).find(({ l }) => l.text.toLowerCase().includes(h.term.term.toLowerCase()));
+        if (first) { scrollToPos(first.page, Math.max(0, first.l.top - 80)); flashHits(first.page, first.l.top, h.term.term); }
+        return;
+      }
+      scrollToPos(h.page, Math.max(0, h.top - 80));
+      if (h.type === "原文") flashHits(h.page, h.top, q);
+    }
+    async function flashHits(page, top, q) {
+      document.querySelectorAll(".text-layer span.hit").forEach((x) => x.classList.remove("hit"));
+      await renderPage(page);
+      const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+      wrapOf(page)?.querySelectorAll(".text-layer span").forEach((sp) => {
+        const y = parseFloat(sp.style.top) / scale;
+        if (Math.abs(y - top) < 4 && words.some((w) => sp.textContent.toLowerCase().includes(w))) sp.classList.add("hit");
+      });
+    }
+
+    // ---------- backup ----------
+    function exportAll() {
+      const ids = library().map((p) => p.id);
+      const papers = {};
+      Object.keys(localStorage).filter((k) => k.startsWith("noesis.reader.v4.paper.")).forEach((k) => { papers[k.slice("noesis.reader.v4.paper.".length)] = readJson(k, null); });
+      const data = {
+        app: "noesis-paper-reader", version: 3, exported: new Date().toISOString(),
+        library: library(), papers, packs: readJson(PACKS_KEY, []),
+        settings: { lang: $("langInput").value, provider: $("providerInput").value, model: $("modelInput").value, base: $("baseInput").value, vault: $("vaultInput").value, folder: $("folderInput").value }
+      };
+      const blob = new Blob([JSON.stringify(data, null, 1)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = `noesis-backup-${new Date().toLocaleDateString("sv-SE")}.json`; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      showToast(`已导出 ${ids.length} 篇论文的数据（不含 API key 和上传的 PDF）。`);
+    }
+    async function importAll(file) {
+      let data;
+      try { data = JSON.parse(await file.text()); } catch { showToast("这个文件不是 Noesis 的备份。"); return; }
+      if (data?.app !== "noesis-paper-reader") { showToast("这个文件不是 Noesis 的备份。"); return; }
+      if (!confirm(`导入 ${data.library?.length || 0} 篇论文。同一篇论文的批注、术语和复述会被备份里的内容覆盖。继续吗？`)) return;
+      const list = library();
+      (data.library || []).forEach((p) => { if (!list.some((x) => x.id === p.id)) list.push(p); });
+      saveLibrary(list);
+      Object.entries(data.papers || {}).forEach(([id, st]) => { if (st) writeJson(stateKey(id), st); });
+      if (Array.isArray(data.packs)) {
+        const packs = readJson(PACKS_KEY, []);
+        data.packs.forEach((pk) => { if (!packs.some((x) => x.id === pk.id)) packs.push(pk); });
+        writeJson(PACKS_KEY, packs);
+      }
+      const st = data.settings || {};
+      if (st.lang) $("langInput").value = st.lang;
+      if (st.provider) $("providerInput").value = st.provider;
+      if (st.model) $("modelInput").value = st.model;
+      if (st.base != null) $("baseInput").value = st.base;
+      if (st.vault != null) $("vaultInput").value = st.vault;
+      if (st.folder != null) $("folderInput").value = st.folder;
+      $("saveSettings").click();
+      const uploads = (data.library || []).filter((p) => p.source === "upload").length;
+      showToast(`导入完成。${uploads ? `${uploads} 篇是上传的 PDF，需要在这台设备上重新上传。` : ""}`);
+      renderLibrary(); renderPacks();
+      if (paper) openPaper(paper.id);
+    }
+
+    // ---------- references and citation cards ----------
+    let refs = [];               // { n, text, surname, year, page, top }
+    let refStyle = null;         // "numeric" | "author-year"
+    let refStart = null;         // where the reference list begins
+    let refByNum = new Map();
+    let refByKey = new Map();
+    const CITE_NUM_RE = /\[(\d{1,3}(?:\s*[,–-]\s*\d{1,3})*)\]/g;
+    const CITE_AY_RE = /\b([A-Z][A-Za-z'’-]+)(?:\s+et\s+al\.?|\s+(?:and|&)\s+[A-Z][A-Za-z'’-]+)?,?\s*\(?((?:19|20)\d{2})[a-z]?\b/g;
+    function expandNums(s) {
+      const out = [];
+      s.split(/\s*,\s*/).forEach((part) => {
+        const m = part.match(/^(\d+)\s*[–-]\s*(\d+)$/);
+        if (m) { for (let k = +m[1]; k <= +m[2] && out.length < 30; k++) out.push(k); }
+        else if (/^\d+$/.test(part)) out.push(+part);
+      });
+      return out;
+    }
+    // "Akbik, A., ..." puts the surname first; "Alan Akbik, ..." puts it last in the first author's name.
+    function firstSurname(text) {
+      const t = text.replace(/^\s*(?:\[\d+\]|\d{1,3}\.)\s*/, "");
+      const lead = t.match(/^([A-Z][A-Za-z'’-]+),\s/);
+      if (lead) return lead[1];
+      const first = t.split(/,|\sand\s|\s&\s/)[0].trim().split(/\s+/);
+      return (first[first.length - 1] || "").replace(/[^A-Za-z'’-]/g, "");
+    }
+    function inRefSection(n, top) {
+      if (!refStart) return false;
+      return n > refStart.page || (n === refStart.page && top > refStart.top);
+    }
+    function parseReferences() {
+      refs = []; refStyle = null; refStart = null; refByNum = new Map(); refByKey = new Map();
+      const HEAD = /^(?:(?:\d{1,2}|[IVX]{1,4})\.?\s*)?(references|bibliography|literature cited|works cited)\s*$/i;
+      const h = headings.filter((x) => HEAD.test(x.title)).pop();
+      if (h) refStart = { page: h.page, top: h.top };
+      for (let n = pdfDoc.numPages; n >= 1 && !refStart; n--) {
+        const hit = (lines.get(n) || []).find((l) => HEAD.test(l.text));
+        if (hit) refStart = { page: n, top: hit.top };
+      }
+      if (!refStart) return;
+      const collected = [];
+      outer: for (let n = refStart.page; n <= pdfDoc.numPages; n++) {
+        let started = n > refStart.page;
+        for (const l of readingOrder(n)) {
+          if (!started) { if (Math.abs(l.top - refStart.top) < 1 && HEAD.test(l.text)) started = true; continue; }
+          if (/^(?:[A-Z]\.?\s+)?(appendix|supplementary)/i.test(l.text) && l.size >= bodySize) break outer;
+          if (/^\d{1,3}$/.test(l.text)) continue;
+          collected.push({ ...l, page: n });
+        }
+      }
+      const bracket = collected.filter((l) => /^\[\d+\]/.test(l.text)).length;
+      const dotted = collected.filter((l) => /^\d{1,3}\.\s+\S/.test(l.text)).length;
+      refStyle = bracket >= 3 || dotted >= 3 ? "numeric" : "author-year";
+      const startRe = bracket >= 3 ? /^\[(\d+)\]\s*/ : /^(\d{1,3})\.\s+/;
+      let cur = null;
+      const colLeft = new Map();
+      collected.forEach((l) => {
+        const key = `${l.page}:${l.x > pageInfo[l.page].w * 0.45 ? 1 : 0}`;
+        colLeft.set(key, Math.min(colLeft.get(key) ?? Infinity, l.x));
+      });
+      collected.forEach((l) => {
+        let starts;
+        if (refStyle === "numeric") starts = startRe.exec(l.text);
+        else {
+          const left = colLeft.get(`${l.page}:${l.x > pageInfo[l.page].w * 0.45 ? 1 : 0}`);
+          starts = Math.abs(l.x - left) < 2 && (!cur || /[.)]\s*$/.test(cur.text) || /^[A-Z][A-Za-z'’-]+,\s/.test(l.text));
+        }
+        if (starts) {
+          cur = { n: refStyle === "numeric" ? +starts[1] : null, text: refStyle === "numeric" ? l.text.replace(startRe, "") : l.text, page: l.page, top: l.top };
+          refs.push(cur);
+        } else if (cur) {
+          cur.text = cur.text.endsWith("-") ? cur.text.slice(0, -1) + l.text : `${cur.text} ${l.text}`;
+        }
+      });
+      refs.forEach((r) => {
+        r.surname = firstSurname(r.text);
+        r.year = r.text.match(/\b((?:19|20)\d{2})[a-z]?\b/)?.[1] || "";
+        if (r.n != null) refByNum.set(r.n, r);
+        if (r.surname && r.year) { const k = `${r.surname.toLowerCase()}|${r.year}`; if (!refByKey.has(k)) refByKey.set(k, r); }
+      });
+    }
+
+    const refCache = new Map();
+    let s2RefsPromise = null;
+    function s2References() {
+      const id = paper?.id?.startsWith("arxiv-") ? paper.id.slice(6).replace(/v\d+$/, "") : null;
+      if (!id) return Promise.resolve([]);
+      if (!s2RefsPromise) {
+        s2RefsPromise = fetchJson(`https://api.semanticscholar.org/graph/v1/paper/arXiv:${id}/references?fields=title,year,authors,venue,citationCount,externalIds,abstract,openAccessPdf&limit=1000`, 15000)
+          .then((d) => (d.data || []).map((x) => x.citedPaper).filter((x) => x && x.title))
+          .catch(() => []);
+      }
+      return s2RefsPromise;
+    }
+    const norm = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    function titleScore(title, raw) {
+      const words = norm(title).split(" ").filter((w) => w.length > 2);
+      if (!words.length) return 0;
+      const hay = ` ${norm(raw)} `;
+      return words.filter((w) => hay.includes(` ${w} `)).length / words.length;
+    }
+    function rebuildAbstract(inv) {
+      if (!inv) return "";
+      const out = [];
+      Object.entries(inv).forEach(([w, pos]) => pos.forEach((p) => { out[p] = w; }));
+      return out.join(" ");
+    }
+    async function lookupRef(r) {
+      if (refCache.has(r.text)) return refCache.get(r.text);
+      let meta = null;
+      const arx = r.text.match(/arXiv[:\s]*(\d{4}\.\d{4,5})/i)?.[1];
+      const list = await s2References();
+      const best = list.map((x) => ({ x, sc: titleScore(x.title, r.text) })).sort((a, b) => b.sc - a.sc)[0];
+      if (best && best.sc >= 0.8) {
+        const x = best.x;
+        meta = { title: x.title, year: x.year, venue: x.venue, cited: x.citationCount, authors: (x.authors || []).map((a) => a.name),
+          abstract: x.abstract || "", arxiv: x.externalIds?.ArXiv || arx || null, doi: x.externalIds?.DOI || null, pdf: x.openAccessPdf?.url || null, sure: true };
+      } else if (arx) {
+        try {
+          const w = await fetchJson(`https://api.openalex.org/works/doi:10.48550/arXiv.${arx}?select=id,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,ids,best_oa_location`, 15000);
+          meta = { title: w.display_name, year: w.publication_year, venue: "arXiv", cited: w.cited_by_count, authors: (w.authorships || []).map((a) => a.author?.display_name).filter(Boolean),
+            abstract: rebuildAbstract(w.abstract_inverted_index), arxiv: arx, doi: null, pdf: `https://arxiv.org/pdf/${arx}`, openalex: w.id, sure: true };
+        } catch {
+          meta = { title: r.text.replace(/^.*?\.\s+/, "").split(/\.\s/)[0], year: r.year, venue: "arXiv", cited: null, authors: [], abstract: "", arxiv: arx, doi: null, pdf: null, sure: false };
+        }
+      }
+      if (!meta) {
+        try {
+          const q = r.text.replace(/\b(19|20)\d{2}[a-z]?\b/g, " ").replace(/[^\w\s-]/g, " ").replace(/\s+/g, " ").slice(0, 240);
+          const d = await fetchJson(`https://api.openalex.org/works?search=${encodeURIComponent(q)}&per_page=1&select=id,display_name,publication_year,authorships,primary_location,cited_by_count,abstract_inverted_index,ids,best_oa_location`, 15000);
+          const w = d.results?.[0];
+          if (w) {
+            const land = w.primary_location?.landing_page_url || "";
+            meta = { title: w.display_name, year: w.publication_year, venue: w.primary_location?.source?.display_name || "", cited: w.cited_by_count,
+              authors: (w.authorships || []).map((a) => a.author?.display_name).filter(Boolean), abstract: rebuildAbstract(w.abstract_inverted_index),
+              arxiv: arx || land.match(/arxiv\.org\/abs\/(\d{4}\.\d{4,5})/)?.[1] || null, doi: w.ids?.doi?.replace("https://doi.org/", "") || null,
+              pdf: w.best_oa_location?.pdf_url || null, openalex: w.id, sure: titleScore(w.display_name, r.text) >= 0.7 };
+          }
+        } catch {}
+      }
+      refCache.set(r.text, meta);
+      return meta;
+    }
+    function metaToEntry(m) {
+      if (m.arxiv) { const e = parseSource(m.arxiv); e.title = m.title; e.meta = `arXiv ${m.arxiv}${m.year ? ` · ${m.year}` : ""}`; return e; }
+      if (m.pdf) return { id: `oa-${(m.openalex || m.doi || m.title).replace(/\W+/g, "").slice(-24)}`, source: "url", pdfUrl: m.pdf, link: m.doi ? `https://doi.org/${m.doi}` : m.pdf, title: m.title, meta: [m.venue, m.year].filter(Boolean).join(" · ") };
+      return null;
+    }
+    function addPaperQuiet(entry) {
+      const list = library();
+      const existing = list.find((p) => p.id === entry.id);
+      if (existing) { if (entry.pack && !existing.pack) { existing.pack = entry.pack; saveLibrary(list); } return false; }
+      list.push({ ...entry, addedAt: new Date().toISOString() });
+      saveLibrary(list); renderLibrary();
+      return true;
+    }
+    async function showCitation(span) {
+      const entries = span.dataset.nums ? span.dataset.nums.split(",").map((k) => refByNum.get(+k)).filter(Boolean) : [refByKey.get(span.dataset.key)].filter(Boolean);
+      if (!entries.length) return;
+      hidePops();
+      const pop = $("citePop"); pop.innerHTML = "";
+      entries.slice(0, 4).forEach((r) => {
+        const item = el("div", "cite-item");
+        item.append(el("div", "raw", `${r.n != null ? `[${r.n}] ` : ""}${r.text}`), el("div", "quiet", "正在查找这篇文献…"));
+        pop.append(item);
+        lookupRef(r).then((m) => {
+          item.lastChild.remove();
+          if (!m) { item.append(el("div", "quiet", "没查到这篇文献的详细信息。")); return; }
+          item.append(el("div", "title", `${m.sure ? "" : "可能是："}${m.title}`));
+          const au = m.authors.length > 3 ? `${m.authors.slice(0, 3).join(", ")} 等` : m.authors.join(", ");
+          item.append(el("div", "meta", [au, m.venue, m.year, m.cited != null ? `被引 ${m.cited}` : ""].filter(Boolean).join(" · ")));
+          if (m.abstract) item.append(el("div", "abs", m.abstract.length > 320 ? `${m.abstract.slice(0, 320)}…` : m.abstract));
+          const row = el("div", "row");
+          const entry = metaToEntry(m);
+          if (entry) {
+            const add = el("button", "btn", "加入我的论文");
+            add.addEventListener("click", () => { add.textContent = addPaperQuiet(entry) ? "已加入" : "已在列表里"; add.disabled = true; });
+            row.append(add);
+          }
+          const url = m.arxiv ? `https://arxiv.org/abs/${m.arxiv}` : m.doi ? `https://doi.org/${m.doi}` : null;
+          if (url) { const a = el("a", "link", "打开原文 ↗"); a.href = url; a.target = "_blank"; a.rel = "noreferrer"; row.append(a); }
+          item.append(row);
+          placePop(pop, span.getBoundingClientRect(), 440);
+        });
+      });
+      placePop(pop, span.getBoundingClientRect(), 440);
+    }
+
+    // ---------- AI skim highlights (goal / method / result) ----------
+    function locateSentence(sentence) {
+      const target = norm(sentence).split(" ");
+      if (target.length < 4) return null;
+      const head = target.slice(0, 6).join(" ");
+      const tail = target.slice(-5).join(" ");
+      for (let n = 1; n <= pdfDoc.numPages; n++) {
+        const ls = readingOrder(n);
+        let joined = "";
+        const starts = [];
+        ls.forEach((l) => { starts.push(joined.length); joined += `${norm(l.text)} `; });
+        const at = joined.indexOf(head);
+        if (at < 0) continue;
+        let end = joined.indexOf(tail, at);
+        if (end < 0 || end - at > 900) end = at + head.length;
+        const lineAt = (pos) => { let k = 0; while (k + 1 < starts.length && starts[k + 1] <= pos) k++; return k; };
+        const a = lineAt(at), b = lineAt(end);
+        return { page: n, rects: ls.slice(a, b + 1).map((l) => ({ x: l.x - 2, y: l.top - 1, w: l.width + 4, h: l.size * 1.2 })) };
+      }
+      return null;
+    }
+    async function skimPaper() {
+      if (!pdfDoc || !lines.size) { showToast("还在读取全文，稍等再点。"); return; }
+      const prompt = `从下面这篇论文里，挑出最能说明三件事的原句：goal（研究要解决什么问题）、method（怎么做的）、result（发现了什么）。每类 2–3 句。
+
+规则：必须逐字照抄原文里的英文句子（不要改写、不要翻译），每句不超过 40 个词；优先从摘要、引言、结论里挑。
+只输出 JSON：{"goal":["..."],"method":["..."],"result":["..."]}
+
+论文：${paper?.title || ""}
+全文（按页标注）：
+${await paperText(50000)}`;
+      if (!apiKey()) { await copyText(prompt, "没填 AI key，prompt 已复制。标重点需要 AI 直接返回，才能在原文上画出来。"); return; }
+      $("skimBtn").textContent = "正在标…";
+      try {
+        const out = parseJson(await callAi(prompt, "Reply with JSON only. Copy sentences verbatim from the paper."));
+        if (!out) throw new Error("没有拿到可读的结果");
+        const found = [];
+        let missed = 0;
+        ["goal", "method", "result"].forEach((label) => (out[label] || []).forEach((text) => {
+          const at = locateSentence(text);
+          if (at) found.push({ label, text, ...at }); else missed++;
+        }));
+        state.skim = found;
+        state.skimShow = state.skimShow || { goal: true, method: true, result: true };
+        save(); renderSkim();
+        for (const n of rendered.keys()) drawHighlights(n);
+        showToast(`标出 ${found.length} 句${missed ? `，${missed} 句没在原文里对上` : ""}。`);
+      } catch (e) {
+        showToast(`没成功：${e.message.slice(0, 60)}`);
+      } finally { $("skimBtn").textContent = state.skim?.length ? "重新标一次" : "标出目标、方法、结果"; }
+    }
+    function renderSkim() {
+      const list = $("skimList"); list.innerHTML = "";
+      const has = !!state.skim?.length;
+      $("skimLegend").classList.toggle("is-on", has);
+      $("skimBtn").textContent = has ? "重新标一次" : "标出目标、方法、结果";
+      document.querySelectorAll("[data-skim]").forEach((c) => { c.checked = state.skimShow?.[c.dataset.skim] !== false; });
+      const names = { goal: "目标", method: "方法", result: "结果" };
+      (state.skim || []).forEach((k) => {
+        const b = el("button");
+        b.append(el("i", `sk ${k.label}`), ` ${names[k.label]} · p.${k.page}　${k.text.length > 70 ? `${k.text.slice(0, 70)}…` : k.text}`);
+        b.addEventListener("click", () => scrollToPos(k.page, Math.max(0, k.rects[0].y - 80)));
+        list.append(b);
+      });
+    }
+
+    // ---------- professor paper packs ----------
+    const PACKS_KEY = "noesis.reader.v4.packs";
+    const packs = () => readJson(PACKS_KEY, []);
+    let packDraft = null;     // { author, works }
+    async function searchProfessor() {
+      const q = $("profName").value.trim();
+      if (q.length < 2) return;
+      const box = $("profResults"); box.innerHTML = ""; $("packWorks").innerHTML = "";
+      box.append(el("p", "quiet", "正在查找…"));
+      try {
+        const d = await fetchJson(`https://api.openalex.org/authors?search=${encodeURIComponent(q)}&per_page=6&select=id,display_name,last_known_institutions,works_count,cited_by_count,topics`);
+        box.innerHTML = "";
+        if (!d.results?.length) { box.append(el("p", "quiet", "没找到。试试英文全名，或者换个拼法。")); return; }
+        box.append(el("p", "quiet", "选出是这位老师的那一个："));
+        d.results.forEach((a) => {
+          const row = el("button", "prof");
+          const inst = (a.last_known_institutions || []).map((i) => i.display_name).join(" / ");
+          const topics = (a.topics || []).slice(0, 3).map((t) => t.display_name).join("、");
+          row.append(el("strong", "", a.display_name), el("span", "quiet", [inst, `${a.works_count} 篇`, `被引 ${a.cited_by_count}`].filter(Boolean).join(" · ")));
+          if (topics) row.append(el("span", "quiet", topics));
+          row.addEventListener("click", () => loadWorks(a));
+          box.append(row);
+        });
+      } catch { box.innerHTML = ""; box.append(el("p", "quiet", "OpenAlex 连不上，稍后再试。")); }
+    }
+    function workToEntry(w, packId) {
+      const land = w.primary_location?.landing_page_url || "";
+      const arx = land.match(/arxiv\.org\/abs\/(\d{4}\.\d{4,5})/)?.[1] || (w.ids?.doi || "").match(/arxiv\.(\d{4}\.\d{4,5})/i)?.[1];
+      const base = { title: w.display_name, meta: [w.primary_location?.source?.display_name, w.publication_year].filter(Boolean).join(" · "),
+        pack: packId, abstract: rebuildAbstract(w.abstract_inverted_index).slice(0, 1500), year: w.publication_year };
+      if (arx) return { ...parseSource(arx), ...base };
+      const doi = w.ids?.doi || null;
+      return { id: `oa-${w.id.split("/").pop()}`, source: "url", pdfUrl: w.best_oa_location?.pdf_url || null, link: doi || land || w.id, ...base };
+    }
+    async function loadWorks(author) {
+      const box = $("packWorks"); box.innerHTML = "";
+      box.append(el("p", "quiet", "正在读取论文…"));
+      try {
+        const short = author.id.split("/").pop();
+        const d = await fetchJson(`https://api.openalex.org/works?filter=author.id:${short},type:article|preprint|review&sort=publication_date:desc&per_page=25&select=id,display_name,publication_year,primary_location,cited_by_count,ids,best_oa_location,abstract_inverted_index`);
+        packDraft = { author, works: d.results || [] };
+        $("profResults").innerHTML = "";
+        box.innerHTML = "";
+        box.append(el("p", "quiet", `${author.display_name} 最近的论文。勾选要读的（建议 3–6 篇），带“可直接读”的能直接打开 PDF：`));
+        packDraft.works.forEach((w, i) => {
+          const entry = workToEntry(w, "");
+          const row = el("label", "work");
+          const cb = document.createElement("input"); cb.type = "checkbox"; cb.dataset.i = i; cb.checked = i < 5;
+          const text = el("div");
+          const title = el("div", "w-title", w.display_name);
+          title.append(el("span", `badge${entry.pdfUrl ? "" : " off"}`, entry.pdfUrl ? "可直接读" : "需上传 PDF"));
+          text.append(title, el("div", "w-meta", [w.primary_location?.source?.display_name, w.publication_year, `被引 ${w.cited_by_count}`].filter(Boolean).join(" · ")));
+          row.append(cb, text);
+          box.append(row);
+        });
+        const make = el("button", "btn dark", "建成论文包");
+        make.addEventListener("click", createPack);
+        const row = el("div", "row"); row.append(make);
+        box.append(row);
+      } catch { box.innerHTML = ""; box.append(el("p", "quiet", "读取失败，稍后再试。")); }
+    }
+    function createPack() {
+      if (!packDraft) return;
+      const picked = [...$("packWorks").querySelectorAll("input[type=checkbox]")].filter((c) => c.checked).map((c) => packDraft.works[+c.dataset.i]);
+      if (!picked.length) { showToast("至少勾一篇。"); return; }
+      const a = packDraft.author;
+      const pack = { id: `pack-${a.id.split("/").pop()}`, name: a.display_name, institution: (a.last_known_institutions || [])[0]?.display_name || "", paperIds: [], summary: null, created: new Date().toISOString() };
+      const all = packs().filter((p) => p.id !== pack.id);
+      // Oldest first, so the research line reads in order.
+      picked.sort((x, y) => (x.publication_year || 0) - (y.publication_year || 0)).forEach((w) => {
+        const e = workToEntry(w, pack.id);
+        addPaperQuiet(e);
+        pack.paperIds.push(e.id);
+      });
+      all.push(pack);
+      writeJson(PACKS_KEY, all);
+      packDraft = null;
+      $("packWorks").innerHTML = "";
+      renderPacks(); renderLibrary();
+      showToast(`已建好“${pack.name}”论文包（${pack.paperIds.length} 篇），在“我的论文”里按顺序读。`);
+    }
+    function renderPacks() {
+      const box = $("packList"); box.innerHTML = "";
+      const list = packs();
+      if (!list.length) return;
+      box.append(el("div", "lib-group", "我的论文包"));
+      list.forEach((pk) => {
+        const card = el("div", "pack");
+        const h = el("h5", "", `${pk.name}`);
+        h.append(el("span", "quiet", `${pk.paperIds.length} 篇`));
+        card.append(h);
+        if (pk.institution) card.append(el("div", "quiet", pk.institution));
+        if (pk.summary) {
+          const sm = el("div", "summary");
+          sm.innerHTML = mdLite(packSummaryText(pk));
+          card.append(sm);
+        }
+        if (pk.letter) {
+          card.append(el("div", "lib-group", "首联信草稿"));
+          card.append(el("div", "letter", `${pk.letter.subject ? `件名：${pk.letter.subject}\n\n` : ""}${pk.letter.body}`));
+          if (pk.letter.zh) card.append(el("div", "letter", `中文对照：\n${pk.letter.zh}`));
+          if (pk.letter.hook) card.append(el("div", "quiet", `钩子来源：${pk.letter.hook}`));
+        }
+        const row = el("div", "row");
+        const letter = el("button", "btn", pk.letter ? "重写首联信" : "写首联信草稿");
+        letter.addEventListener("click", () => draftLetter(pk.id, letter));
+        row.append(letter);
+        if (pk.letter) {
+          const cl = el("button", "btn", "复制信");
+          cl.addEventListener("click", () => copyText(`${pk.letter.subject ? `${pk.letter.subject}\n\n` : ""}${pk.letter.body}`));
+          row.append(cl);
+        }
+        const gen = el("button", "btn", pk.summary ? "重新生成研究线" : "生成研究线");
+        gen.addEventListener("click", () => researchLine(pk.id, gen));
+        row.append(gen);
+        if (pk.summary) {
+          const cp = el("button", "btn", "复制 Markdown");
+          cp.addEventListener("click", () => copyText(packMarkdown(pk)));
+          row.append(cp);
+        }
+        const page1 = el("button", "btn", "面谈一页纸");
+        page1.addEventListener("click", () => onePager(pk));
+        row.append(page1);
+        const del = el("button", "btn", "删除论文包");
+        del.addEventListener("click", () => {
+          if (!confirm("删除这个论文包？里面的论文和笔记会保留在“我的论文”里。")) return;
+          writeJson(PACKS_KEY, packs().filter((p) => p.id !== pk.id));
+          saveLibrary(library().map((p) => p.pack === pk.id ? { ...p, pack: undefined } : p));
+          renderPacks(); renderLibrary();
+        });
+        row.append(del);
+        card.append(row);
+        box.append(card);
+      });
+    }
+    function packSummaryText(pk) {
+      const s = pk.summary || {};
+      const list = (xs) => (xs || []).map((x) => `- ${x}`).join("\n");
+      return `**主线：** ${s.line || ""}\n\n**主题：**\n${list(s.themes)}\n\n**常用方法：**\n${list(s.methods)}\n\n**近几年的变化：** ${s.shift || ""}\n\n**我可以接上的点：** ${s.angle || ""}\n\n**可以问的问题：**\n${list(s.questions)}`;
+    }
+    function packMarkdown(pk) {
+      const papers = pk.paperIds.map((id) => library().find((p) => p.id === id)).filter(Boolean);
+      return `# ${pk.name} 的研究线\n\n${pk.institution ? `${pk.institution}\n\n` : ""}${packSummaryText(pk)}\n\n## 读过的论文\n\n${papers.map((p) => `- ${p.title}（${p.meta || ""}）`).join("\n")}\n`;
+    }
+    async function researchLine(packId, btn) {
+      const pk = packs().find((p) => p.id === packId);
+      if (!pk) return;
+      const papers = pk.paperIds.map((id) => library().find((p) => p.id === id)).filter(Boolean);
+      const blocks = papers.map((p, i) => {
+        const st = readJson(stateKey(p.id), null);
+        const mine = st ? [st.skeleton?.answer && `我的一句话：${st.skeleton.answer}`, st.card?.one && `能聊卡：${st.card.one}；方法：${st.card.method}；局限：${st.card.limit}`, st.card?.ask && `我想问：${st.card.ask}`].filter(Boolean).join("\n") : "";
+        return `【${i + 1}】${p.title}（${p.meta || ""}）\n摘要：${p.abstract || "（无）"}${mine ? `\n${mine}` : ""}`;
+      }).join("\n\n");
+      const ask = lang().code === "ja" ? "questions 用面谈时可以直接说出口的敬语（です・ます体）。" : "";
+      const prompt = `下面是 ${pk.name}${pk.institution ? `（${pk.institution}）` : ""} 的几篇论文（按年份从早到晚），以及一位准备联系这位老师的学生自己写的读书笔记。请整理这位老师的研究线，帮学生准备首联信和面谈。
+
+规则：只根据下面给出的内容，不要编造论文里没有的事；拿不准的地方说明是推测。用${lang().name}写。${ask}
+只输出 JSON：{"line":"这位老师的研究主线，一两句","themes":["反复出现的主题，3 条以内"],"methods":["常用的方法或数据，3 条以内"],"shift":"近几年的变化或新方向，一句","angle":"结合学生笔记，学生可以接上的点，一两句","questions":["面谈时可以问的具体问题，3 个"]}
+
+${blocks}`;
+      if (!apiKey()) { await copyText(prompt, "没填 AI key，prompt 已复制。"); return; }
+      btn.textContent = "整理中…";
+      try {
+        const out = parseJson(await callAi(prompt, `Reply with JSON only, in ${lang().en}.`));
+        if (!out) throw new Error("没有拿到可读的结果");
+        writeJson(PACKS_KEY, packs().map((p) => p.id === packId ? { ...p, summary: out } : p));
+        renderPacks();
+      } catch (e) { await copyText(prompt, "请求失败，prompt 已复制。"); btn.textContent = "生成研究线"; }
+    }
+
+    // ---------- formulas ----------
+    async function explainFormula() {
+      const pageText = await pageTextOf(pending.page);
+      const q = "解释公式";
+      const prompt = `下面是从 PDF 里复制出来的一段数学公式，符号顺序和上下标可能乱了。请：
+1. 根据上下文把它还原成 LaTeX，单独一行，用 $$ 包起来；
+2. 逐个解释里面的符号；
+3. 用一两句话说它的直观含义；
+4. 说明它在这篇论文里起什么作用。
+用${lang().name}回答，全文不超过 300 字。还原不确定的地方要说明。结尾写“依据：p.${pending.page}”。
+
+选中的内容：
+${pending.quote}
+
+这一页的原文（供参考）：
+${pageText.slice(0, 3500)}`;
+      const body = $("selBody");
+      if (!apiKey()) {
+        await copyText(prompt, "没填 AI key，prompt 已复制。");
+        body.textContent = "没填 AI key：prompt 已复制，可以贴到任意 AI 聊天工具。";
+        return;
+      }
+      body.textContent = "AI 正在还原公式…";
+      const img = pending.region && canSee() ? await regionImage(pending.page, pending.rects[0]) : null;
+      try { addAnnotation("ai", await callAi(prompt, undefined, img), { question: q }); hidePops(); }
+      catch (e) { await copyText(prompt, "AI 请求失败，prompt 已复制。"); body.textContent = `请求没有成功（${e.message.slice(0, 80)}）。prompt 已复制。`; }
+    }
+    // Typeset $...$ and $$...$$ in AI answers with KaTeX, loaded the first time it is needed.
+    let katexReady = null;
+    function loadKatex() {
+      if (katexReady) return katexReady;
+      const base = "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/";
+      const css = document.createElement("link"); css.rel = "stylesheet"; css.href = `${base}katex.min.css`; document.head.append(css);
+      const load = (src) => new Promise((res, rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = rej; document.head.append(s); });
+      katexReady = load(`${base}katex.min.js`).then(() => load(`${base}contrib/auto-render.min.js`));
+      return katexReady;
+    }
+    function typesetMath(node) {
+      if (!/\$[^$]+\$/.test(node.textContent)) return;
+      loadKatex().then(() => {
+        window.renderMathInElement?.(node, { delimiters: [{ left: "$$", right: "$$", display: true }, { left: "$", right: "$", display: false }], throwOnError: false });
+        const id = node.closest(".note")?.dataset.id;
+        const a = id && state.annotations.find((x) => x.id === id);
+        if (a) layoutMargin(a.page);
+      }).catch(() => {});
+    }
+
+    // ---------- full-text translation, paragraph by paragraph ----------
+    const transKey = (id, code) => `noesis.reader.v4.trans.${id}.${code}`;
+    const paraCache = new Map();   // page -> paragraphs
+    let transMap = {};             // text hash -> { t, m } (m = machine translation)
+    const transQueue = [];
+    let transBusy = false;
+    const transOn = () => document.body.classList.contains("trans-on");
+    function textHash(t) { let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return `${(h >>> 0).toString(36)}${t.length}`; }
+    const learnKey = (id, code) => `noesis.reader.v4.learn.${id}.${code}`;
+    let learnMap = {};             // text hash -> { words: [{ w, m }], hard: [{ en, t }] }
+    const learning = () => state.transMode === "learn";
+    function loadTrans() {
+      transMap = paper ? readJson(transKey(paper.id, lang().code), {}) : {};
+      learnMap = paper ? readJson(learnKey(paper.id, lang().code), {}) : {};
+    }
+    function saveTrans() { if (paper) { writeJson(transKey(paper.id, lang().code), transMap); writeJson(learnKey(paper.id, lang().code), learnMap); } }
+    const doneMap = () => (learning() ? learnMap : transMap);
+
+    // Rebuild paragraphs from lines: join wrapped lines, fix hyphenation,
+    // drop running headers, footers and page numbers, and stop at the reference list.
+    function paragraphs(n) {
+      if (paraCache.has(n)) return paraCache.get(n);
+      const ls = readingOrder(n);
+      if (!ls.length) return [];
+      const h = pageInfo[n].h, w = pageInfo[n].w;
+      const isHeading = (l) => headings.some((x) => x.page === n && Math.abs(x.top - l.top) < 2 && (x.x == null || Math.abs(x.x - l.x) < 6));
+      const isCaption = (l) => /^(fig(?:ure)?\.?|table)\s*\d+\s*[.:|]/i.test(l.text);
+      const col = (l) => (l.width < w * 0.55 && l.x > w * 0.45 ? 1 : 0);
+      const out = [];
+      let cur = null;
+      // Author lists, e-mail lines and the like are left out: nothing there to translate.
+      const prose = (t) => !/@|©|copyright|creative commons|licen[cs]e|doi\.org|https?:\/\/|address for correspondence|e-mail/i.test(t) && (t.match(/\b[a-z]{3,}\b/g) || []).length >= 4;
+      const close = () => { if (cur && (cur.kind === "heading" || (cur.text.length > 25 && prose(cur.text)))) out.push(cur); cur = null; };
+      for (const l of ls) {
+        if (inRefSection(n, l.top)) break;
+        if ((l.top < h * 0.06 || l.top > h * 0.93) && l.text.length < 80) continue;
+        if (/^\d{1,3}$/.test(l.text)) continue;
+        if (cur && l.size < bodySize * 0.85 && l.text.length < 40) { cur.text += l.text; continue; }
+        const heading = isHeading(l), caption = isCaption(l);
+        if (heading || caption) { close(); cur = { kind: heading ? "heading" : "caption", text: l.text, lines: [l] }; if (heading) close(); continue; }
+        const prev = cur?.lines[cur.lines.length - 1];
+        const gap = prev ? l.top - (prev.top + prev.size) : 0;
+        const newPara = !cur || col(l) !== col(prev) || gap > prev.size * 0.9 || gap < -prev.size
+          || (cur.kind === "body" && l.x > prev.x + l.size * 1.2 && /[.:]$/.test(prev.text))
+          || (cur.kind === "body" && /[.!?]["”)]?$/.test(prev.text) && prev.width < (cur.maxW || prev.width) * 0.75);
+        if (newPara) { close(); cur = { kind: cur?.kind === "caption" && !newPara ? "caption" : "body", text: l.text, lines: [l], maxW: l.width }; continue; }
+        cur.text = /[A-Za-z]-$/.test(cur.text) ? cur.text.slice(0, -1) + l.text : `${cur.text} ${l.text}`;
+        cur.lines.push(l);
+        cur.maxW = Math.max(cur.maxW || 0, l.width);
+      }
+      close();
+      const paras = out.map((p, i) => {
+        const top = Math.min(...p.lines.map((l) => l.top));
+        const bottom = Math.max(...p.lines.map((l) => l.top + l.size * 1.2));
+        return { id: `${n}-${i}`, page: n, kind: p.kind, text: p.text.replace(/\s+/g, " ").trim(), top, bottom, lines: p.lines, hash: textHash(p.text) };
+      });
+      paraCache.set(n, paras);
+      return paras;
+    }
+
+    function renderTransCol(n) {
+      const wrap = wrapOf(n); if (!wrap) return;
+      const colEl = wrap.querySelector(".trans-col");
+      colEl.innerHTML = "";
+      if (!lines.size) { colEl.append(el("div", "tp wait", "正在读取全文…")); return; }
+      const paras = paragraphs(n);
+      const head = el("div", "trans-head");
+      const seg = el("div", "seg");
+      [["full", "对照"], ["learn", "学习"]].forEach(([mode, label]) => {
+        const b = el("button", (state.transMode || "full") === mode ? "is-on" : "", label);
+        b.title = mode === "learn" ? "只给难句和生词，其余保留英文" : "整段翻译";
+        b.addEventListener("click", () => setTransMode(mode));
+        seg.append(b);
+      });
+      head.append(seg);
+      const done = doneMap();
+      const missing = paras.filter((p) => !done[p.hash]).length;
+      const machine = !learning() && paras.some((p) => transMap[p.hash]?.m);
+      head.append(el("span", "", `${missing ? `本页 ${paras.length - missing}/${paras.length} 段已翻` : `本页 ${paras.length} 段`}${machine ? " · 含机器翻译" : ""}`));
+      if (missing && !transQueue.includes(n)) {
+        const b = el("button", "btn", "翻译本页");
+        b.addEventListener("click", () => queueTranslate(n, true));
+        head.append(b);
+      } else if (!missing && paras.length && !transQueue.includes(n)) {
+        const b = el("button", "btn", "重新翻译");
+        b.addEventListener("click", () => { paras.forEach((p) => delete done[p.hash]); saveTrans(); queueTranslate(n, true); });
+        head.append(b);
+      }
+      colEl.append(head);
+      let bottom = 0;
+      if (learning()) {
+        paras.forEach((p) => {
+          const lm = learnMap[p.hash];
+          const block = el("div", "tl");
+          if (!lm) { if (!transQueue.includes(n) && !transBusy) return; block.classList.add("wait"); block.textContent = "…"; }
+          else {
+            if (lm.words?.length) {
+              const ws = el("div", "words");
+              lm.words.forEach((x) => {
+                const chip = el("span", "word");
+                chip.append(el("b", "", x.w), x.m);
+                chip.title = "点一下记成术语";
+                chip.addEventListener("click", () => addTermWithMeaning(x.w, x.m));
+                ws.append(chip);
+              });
+              block.append(ws);
+            }
+            (lm.hard || []).forEach((h) => { const d = el("div", "hard"); d.append(el("i", "", h.en), h.t); block.append(d); });
+            if (!lm.words?.length && !lm.hard?.length) block.append(el("span", "easy", "这段不难，直接读原文"));
+          }
+          colEl.append(block);
+          const top = Math.max(p.top * scale, bottom);
+          block.style.top = `${top}px`;
+          bottom = top + block.offsetHeight + 6;
+          block.addEventListener("mouseenter", () => litPara(p, true));
+          block.addEventListener("mouseleave", () => litPara(p, false));
+        });
+        colEl.style.minHeight = `${bottom}px`;
+        return;
+      }
+      paras.forEach((p) => {
+        const tr = transMap[p.hash];
+        // Prefix the kind: a bare "body" class would pick up the page layout's .body grid.
+        const block = el("div", `tp k-${p.kind}${tr ? "" : " wait"}`);
+        block.textContent = tr ? tr.t : transQueue.includes(n) || transBusy ? "…" : "";
+        if (!tr && !block.textContent) return;
+        colEl.append(block);
+        const top = Math.max(p.top * scale, bottom);
+        block.style.top = `${top}px`;
+        bottom = top + block.offsetHeight + 6;
+        block.addEventListener("mouseenter", () => litPara(p, true));
+        block.addEventListener("mouseleave", () => litPara(p, false));
+      });
+      colEl.style.minHeight = `${bottom}px`;
+    }
+    function litPara(p, on) {
+      const layer = wrapOf(p.page)?.querySelector(".hl-layer"); if (!layer) return;
+      layer.querySelectorAll(".para-lit").forEach((d) => d.remove());
+      if (!on) return;
+      p.lines.forEach((l) => {
+        const d = el("div", "para-lit");
+        Object.assign(d.style, { left: `${(l.x - 2) * scale}px`, top: `${(l.top - 1) * scale}px`, width: `${(l.width + 4) * scale}px`, height: `${l.size * 1.2 * scale}px` });
+        layer.append(d);
+      });
+    }
+
+    function queueTranslate(n, force = false) {
+      if (!lines.size || lang().code === "en") return;
+      if (!force && state.transAuto === false) return;
+      if (learning() && !apiKey()) { showToast("学习模式需要 AI key：要由 AI 挑出难句和生词。"); return; }
+      if (!paragraphs(n).some((p) => !doneMap()[p.hash])) return;
+      if (!transQueue.includes(n)) transQueue.push(n);
+      renderTransCol(n);
+      drainTranslate();
+    }
+    async function drainTranslate() {
+      if (transBusy) return;
+      transBusy = true;
+      const token = loadToken;
+      try {
+        while (transQueue.length && token === loadToken) {
+          const n = transQueue[0];
+          const todo = paragraphs(n).filter((p) => !doneMap()[p.hash]);
+          $("transStatus").textContent = `${learning() ? "标注" : "翻译"} p.${n}…`;
+          if (todo.length) await (learning() ? learnParas(todo) : translateParas(todo));
+          transQueue.shift();
+          if (token === loadToken) renderTransCol(n);
+        }
+      } catch (e) {
+        showToast(`翻译中断：${e.message.slice(0, 60)}`);
+        transQueue.length = 0;
+      } finally {
+        transBusy = false;
+        $("transStatus").textContent = "";
+      }
+    }
+
+    // With a key: the AI translates a section at a time with the title, the reader's glossary and the paragraph before.
+    // Without a key: machine translation paragraph by paragraph.
+    async function translateParas(list) {
+      if (!apiKey()) {
+        for (const p of list) {
+          const r = await machineTranslate(p.text);
+          if (r.main) { transMap[p.hash] = { t: r.main, m: 1 }; saveTrans(); }
+        }
+        return;
+      }
+      const chunks = [];
+      let cur = [];
+      let size = 0;
+      list.forEach((p) => {
+        if (size + p.text.length > 4500 && cur.length) { chunks.push(cur); cur = []; size = 0; }
+        cur.push(p); size += p.text.length;
+      });
+      if (cur.length) chunks.push(cur);
+      const glossary = state.terms.filter((t) => t.meaning).map((t) => `${t.term} → ${t.meaning}`).join("\n");
+      for (const chunk of chunks) {
+        const before = paragraphs(chunk[0].page).filter((p) => p.top < chunk[0].top).pop();
+        const prompt = `把下面的论文段落翻译成${lang().name}。它们来自论文《${paper?.title || ""}》。
+
+要求：
+- 准确、通顺，读起来像这个领域的人写的${lang().name}；不增不减，不加解释。
+- 公式、变量符号、引用标记（如 [12]、(Smith et al., 2020)）、数字和单位原样保留。
+- 原文里紧跟在词或标点后面的上标引用编号（如 "glands.1"、"QOL).3,4"），在译文里写成方括号放在句子相应位置，如 [1]、[3,4]；不要用 ^ 符号。
+- 专业术语前后译法一致，优先用下面的术语表；表里没有的术语，第一次出现时写成“译名（English）”。
+- 标记为“标题”的只译标题本身；标记为“图注”的照常翻译。
+${glossary ? `\n术语表：\n${glossary}\n` : ""}${before ? `\n上文（只供理解，不要翻译）：${before.text.slice(-300)}\n` : ""}
+只输出 JSON，键是段落编号，值是译文：{"1":"…","2":"…"}
+
+段落：
+${chunk.map((p, i) => `[${i + 1}]${p.kind === "heading" ? "（标题）" : p.kind === "caption" ? "（图注）" : ""} ${p.text}`).join("\n\n")}`;
+        const out = parseJson(await callAi(prompt, `You are a professional academic translator into ${lang().en}. Reply with JSON only.`));
+        if (!out) throw new Error("AI 没有返回可读的译文");
+        chunk.forEach((p, i) => { const t = out[String(i + 1)]; if (t) transMap[p.hash] = { t: String(t).trim() }; });
+        saveTrans();
+        renderTransCol(chunk[0].page);
+      }
+    }
+
+    function setTransOn(on, auto = true) {
+      document.body.classList.toggle("trans-on", on);
+      $("transToggle").classList.toggle("is-on", on);
+      state.transOn = on;
+      if (on) state.transAuto = auto;
+      save();
+      if (lang().code === "en" && on) showToast("输出语言是英文，不需要翻译。可以在 ⚙︎ 里改成中文或日本語。");
+      applyScale();
+      if (on && auto) for (const n of rendered.keys()) queueTranslate(n);
+    }
+    // First-pass shortcut: translate only the abstract and the conclusion.
+    async function quickTranslate() {
+      if (!lines.size) { showToast("还在读取全文，稍等再点。"); return; }
+      const all = [];
+      for (let n = 1; n <= pdfDoc.numPages; n++) all.push(...paragraphs(n));
+      const sectionOf = (re) => {
+        const hs = headings.filter((x) => re.test(x.title));
+        const hh = re.source.includes("abstract") ? hs[0] : hs.pop();
+        if (!hh) return [];
+        const next = headings.find((x) => x.page > hh.page || (x.page === hh.page && x.top > hh.top + 1));
+        return all.filter((p) => (p.page > hh.page || (p.page === hh.page && p.top >= hh.top)) && (!next || p.page < next.page || (p.page === next.page && p.top < next.top)));
+      };
+      let pick = [...sectionOf(/abstract|summary/i), ...sectionOf(/conclu|discussion/i)];
+      if (!pick.length) pick = all.filter((p) => p.page === 1 && p.text.length > 300).slice(0, 1);
+      if (!pick.length) { showToast("没找到摘要和结论。可以打开“对照翻译”逐页翻。"); return; }
+      setTransOn(true, false);
+      $("transStatus").textContent = "翻译摘要和结论…";
+      try { await translateParas(pick.filter((p) => !transMap[p.hash])); }
+      catch (e) { showToast(`翻译中断：${e.message.slice(0, 60)}`); }
+      finally { $("transStatus").textContent = ""; }
+      for (const n of new Set(pick.map((p) => p.page))) renderTransCol(n);
+      scrollToPos(pick[0].page, Math.max(0, pick[0].top - 60));
+    }
+
+    // ---------- learning mode: only hard sentences and new words ----------
+    function setTransMode(mode) {
+      state.transMode = mode; save();
+      for (const n of rendered.keys()) { renderTransCol(n); if (state.transAuto !== false) queueTranslate(n); }
+    }
+    async function addTermWithMeaning(word, meaning) {
+      if (state.terms.some((t) => t.term.toLowerCase() === word.toLowerCase())) { showToast("这个词已经记过了。"); return; }
+      state.terms.unshift({ id: uid(), term: word, meaning, created: new Date().toISOString() });
+      save(); buildTermRegex(); renderTerms(); await rebuildTextLayers();
+      showToast(`已记成术语，全文 ${countTerm(word)} 处已标出。`);
+    }
+    async function learnParas(list) {
+      const known = state.terms.map((t) => t.term).join(", ");
+      const chunks = [];
+      let cur = [], size = 0;
+      list.forEach((p) => { if (size + p.text.length > 4500 && cur.length) { chunks.push(cur); cur = []; size = 0; } cur.push(p); size += p.text.length; });
+      if (cur.length) chunks.push(cur);
+      for (const chunk of chunks) {
+        const prompt = `一位英语不是母语的研究生在读论文《${paper?.title || ""}》，想借读论文提高英文阅读能力。请逐段帮他挑出值得学的地方，不要整段翻译。
+
+每段给：
+- words：最多 5 个对这位读者可能陌生、又值得记住的学术词或专业词（短语也可以），每个附一个贴合本文语境的${lang().name}释义（不超过 12 个字）。不要挑太常见的词，也不要挑他已经认识的：${known || "（无）"}。
+- hard：最多 2 个结构复杂、容易读错的句子，原句逐字照抄放在 en，${lang().name}译文放在 t。
+段落简单就都给空数组。
+
+只输出 JSON，键是段落编号：{"1":{"words":[{"w":"…","m":"…"}],"hard":[{"en":"…","t":"…"}]},"2":{…}}
+
+段落：
+${chunk.map((p, i) => `[${i + 1}] ${p.text}`).join("\n\n")}`;
+        const out = parseJson(await callAi(prompt, `You help a non-native reader learn from an academic paper. Reply with JSON only, explanations in ${lang().en}.`));
+        if (!out) throw new Error("AI 没有返回可读的结果");
+        chunk.forEach((p, i) => { const v = out[String(i + 1)]; if (v) learnMap[p.hash] = { words: (v.words || []).slice(0, 5), hard: (v.hard || []).slice(0, 2) }; });
+        saveTrans();
+        renderTransCol(chunk[0].page);
+      }
+    }
+
+    // ---------- interview practice ----------
+    function ivState() { state.interview = state.interview || { questions: [], answers: [], feedback: [] }; return state.interview; }
+    function renderInterview() {
+      const iv = ivState();
+      const box = $("ivBox"); box.innerHTML = "";
+      $("ivStart").textContent = iv.questions.length ? "重新开始" : "开始模拟面谈";
+      iv.questions.forEach((q, i) => {
+        const answered = iv.answers[i] != null;
+        const isCurrent = !answered && iv.answers.length === i;
+        if (!answered && !isCurrent) return;
+        const qd = el("div", "iv-q");
+        qd.append(el("small", "", `问题 ${i + 1} / ${iv.questions.length}`), q);
+        box.append(qd);
+        if (answered) {
+          box.append(el("div", "iv-a", iv.answers[i] || "（跳过）"));
+          const f = iv.feedback[i];
+          if (f) {
+            const fb = el("div", `fb ${f.verdict || ""}`);
+            fb.append(`${{ ok: "✓ ", missing: "⚠ ", wrong: "✗ " }[f.verdict] || ""}${f.hint || ""}`);
+            if (f.better) {
+              const reveal = el("button", "link", "　看示范回答");
+              reveal.addEventListener("click", () => reveal.replaceWith(el("div", "quiet", `示范：${f.better}`)));
+              fb.append(reveal);
+            }
+            box.append(fb);
+            if (f.followup && !iv.questions.includes(f.followup) && i === iv.answers.length - 1) {
+              const fu = el("button", "iv-follow link", `老师追问：${f.followup}（点这里回答）`);
+              fu.addEventListener("click", () => { iv.questions.splice(i + 1, 0, f.followup); save(); renderInterview(); });
+              box.append(fu);
+            }
+          }
+        } else {
+          const ta = document.createElement("textarea"); ta.rows = 4; ta.placeholder = "像当面回答一样写下来（也可以先说出口再整理）";
+          const row = el("div", "row");
+          const mic = el("button", "btn mic", "🎙 说");
+          mic.addEventListener("click", () => micInto(ta, mic, 90));
+          row.append(mic);
+          const send = el("button", "btn dark", "提交回答");
+          const skip = el("button", "btn", "跳过");
+          send.addEventListener("click", () => answerInterview(i, ta.value.trim(), send));
+          skip.addEventListener("click", () => { iv.answers[i] = ""; iv.feedback[i] = null; save(); renderInterview(); });
+          row.append(send, skip);
+          box.append(ta, row);
+        }
+      });
+      if (iv.questions.length && iv.answers.length >= iv.questions.length) box.append(el("p", "quiet", "这一轮问完了。答得不顺的题，可以过几天再练一次。"));
+    }
+    async function startInterview() {
+      if (!pdfDoc) return;
+      const c = state.card;
+      const prompt = `你是论文《${paper?.title || ""}》的作者，也是研究室的老师。一位想来读研的学生读完这篇论文，正在和你面谈。请提出 5 个你在面谈里会问的问题，由浅入深：
+1. 这篇研究要解决什么问题；
+2. 方法里的一个关键设计，为什么这样做；
+3. 结果怎么解读，或者有什么局限；
+4. 如果让学生来做下一步，他会怎么做；
+5. 学生自己的背景、关心的问题和这项研究的联系。
+用${lang().name}提问，口语化，像当面问${lang().code === "ja" ? "（日语用老师对学生的自然口吻）" : ""}，每题一句。
+只输出 JSON：{"questions":["…","…","…","…","…"]}
+
+学生的能聊卡（可能为空）：一句话：${c.one || ""}；方法：${c.method || ""}；局限：${c.limit || ""}
+${(() => { const pk = packs().find((p) => p.paperIds.includes(paper?.id)); if (!pk) return ""; const others = pk.paperIds.filter((id) => id !== paper.id).map((id) => library().find((p) => p.id === id)?.title).filter(Boolean).slice(0, 5); return `\n这位老师的其他论文：${others.join("；") || "（无）"}${pk.summary?.line ? `\n他的研究主线：${pk.summary.line}` : ""}\n第 4 或第 5 题可以把这篇和他的其他研究、研究主线联系起来问。`; })()}
+
+论文全文（按页标注）：
+${await paperText(40000)}`;
+      if (!apiKey()) { await copyText(prompt, "没填 AI key，出题用的 prompt 已复制。"); return; }
+      $("ivStart").textContent = "出题中…";
+      try {
+        const out = parseJson(await callAi(prompt, `You are the paper's author interviewing a prospective student. Reply with JSON only, in ${lang().en}.`));
+        if (!out?.questions?.length) throw new Error("没有拿到题目");
+        state.interview = { questions: out.questions.slice(0, 6), answers: [], feedback: [], lang: lang().code };
+        save(); renderInterview();
+      } catch (e) { showToast(`没成功：${e.message.slice(0, 60)}`); renderInterview(); }
+    }
+    async function answerInterview(i, answer, btn) {
+      if (!answer) { showToast("先写下你的回答。"); return; }
+      const iv = ivState();
+      const prompt = `你是论文《${paper?.title || ""}》的作者，在面谈一位想来读研的学生。
+
+你的问题：${iv.questions[i]}
+学生的回答：${answer}
+
+请像温和但认真的老师一样，对照论文内容评价这个回答：
+- verdict：ok（说到点子上）、missing（方向对但缺了要点）、wrong（理解有误）；
+- hint：一句话，指出最该改进或补充的地方，不要直接给出完整答案；
+- better：一个更好的回答示范，2–3 句，用学生可以直接说出口的${lang().name}${lang().code === "ja" ? "（です・ます体，自然的面谈口吻）" : ""}，要基于论文内容，不要编造学生的经历；
+- followup：老师接下来可能追问的一个问题，没有就给空字符串。
+hint、better、followup 都用${lang().name}。只输出 JSON：{"verdict":"","hint":"","better":"","followup":""}
+
+论文全文（按页标注）：
+${await paperText(30000)}`;
+      if (!apiKey()) { await copyText(prompt, "没填 AI key，点评用的 prompt 已复制。"); return; }
+      btn.textContent = "点评中…"; btn.disabled = true;
+      try {
+        const out = parseJson(await callAi(prompt, `You are the paper's author giving feedback. Reply with JSON only, in ${lang().en}.`));
+        if (!out) throw new Error("没有拿到点评");
+        iv.answers[i] = answer; iv.feedback[i] = out;
+        save(); renderInterview();
+      } catch (e) { showToast(`没成功：${e.message.slice(0, 60)}`); btn.textContent = "提交回答"; btn.disabled = false; }
+    }
+
+    // ---------- first-contact letter from the reader's own notes ----------
+    const PROFILE_KEY = "noesis.reader.v4.profile";
+    async function draftLetter(packId, btn) {
+      const pk = packs().find((p) => p.id === packId);
+      if (!pk) return;
+      const profile = $("myProfile").value.trim();
+      if (!profile) { showToast("先在下面写一两句你的背景和想做的方向。"); $("myProfile").focus(); return; }
+      const papers = pk.paperIds.map((id) => library().find((p) => p.id === id)).filter(Boolean);
+      const notes = papers.map((p) => {
+        const st = readJson(stateKey(p.id), null);
+        if (!st) return "";
+        const ann = (st.annotations || []).filter((a) => a.text).slice(0, 6).map((a) => `- ${a.quote ? `“${a.quote.slice(0, 120)}” ` : ""}${a.text.slice(0, 200)}`).join("\n");
+        const mine = [st.skeleton?.answer && `一句话：${st.skeleton.answer}`, st.card?.one && `能聊卡：${st.card.one}；局限：${st.card.limit}；想问：${st.card.ask}`].filter(Boolean).join("\n");
+        return mine || ann ? `【${p.title}（${p.meta || ""}）】\n${mine}\n${ann}` : "";
+      }).filter(Boolean).join("\n\n");
+      if (!notes) { showToast("这个论文包里还没有你的笔记。先读一两篇，写下批注或能聊卡，信才有具体内容。"); return; }
+      const ja = lang().code === "ja";
+      const prompt = `帮一位学生起草给 ${pk.name}${pk.institution ? `（${pk.institution}）` : ""} 老师的第一封联系邮件，询问能否来研究室读研${ja ? "（研究生／修士）" : ""}。
+
+写法：
+- 用${lang().name}写${ja ? "，日本的商务邮件格式和敬语：件名、宛名（〇〇先生）、自我介绍、正文、结尾敬辞" : ""}，全文不超过 ${ja ? "600 字" : "350 词"}。
+- 开头一两句说清自己是谁、为什么写信。
+- 核心是“钩子”：从学生的笔记里挑一个最具体的点（某篇论文里的某个设计、结果或局限，以及学生自己的想法），写出学生真读懂了、并且想接着做什么。不要泛泛夸老师的研究。
+- 把这个点和学生的背景、想做的方向连起来，说明为什么想来这个研究室。
+- 结尾礼貌地提出请求（比如能否面谈或线上交流），不要催促。
+- 只用学生背景和笔记里真实存在的内容，不编造经历、成果或已读过的论文。
+${ja ? "- 另外给出中文对照，方便学生核对意思。\n" : ""}
+只输出 JSON：{"subject":"件名","body":"正文","zh":"${ja ? "中文对照" : ""}","hook":"用了哪篇论文的哪条笔记，一句话"}
+
+学生的背景和方向：${profile}
+
+学生读这位老师论文时写的笔记：
+${notes}`;
+      if (!apiKey()) { await copyText(prompt, "没填 AI key，写信用的 prompt 已复制。"); return; }
+      btn.textContent = "起草中…";
+      try {
+        const out = parseJson(await callAi(prompt, `You draft a respectful first-contact email for a prospective graduate student. Reply with JSON only.`));
+        if (!out?.body) throw new Error("没有拿到草稿");
+        writeJson(PACKS_KEY, packs().map((p) => p.id === packId ? { ...p, letter: out } : p));
+        renderPacks();
+      } catch (e) { showToast(`没成功：${e.message.slice(0, 60)}`); btn.textContent = "写首联信草稿"; }
+    }
+
+    // ---------- spoken retelling ----------
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const srLang = () => ({ zh: "zh-CN", ja: "ja-JP", en: "en-US" })[lang().code] || "zh-CN";
+    // Dictate into a textarea; stops by itself after `limit` seconds.
+    function micInto(textarea, button, limit = 60, onTick = null) {
+      if (!SR) { showToast("这个浏览器不支持语音识别，请用 Chrome 或 Edge；也可以直接打字。"); return null; }
+      if (button.dataset.rec) { button.dataset.rec = ""; button.classList.remove("is-on"); button._rec?.stop(); return null; }
+      const rec = new SR();
+      rec.lang = srLang(); rec.continuous = true; rec.interimResults = true;
+      const base = textarea.value ? `${textarea.value.trim()}\n` : "";
+      let finals = "";
+      const started = Date.now();
+      rec.onresult = (e) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) { const t = e.results[i][0].transcript; if (e.results[i].isFinal) finals += t; else interim += t; }
+        textarea.value = base + finals + interim;
+      };
+      const stop = () => { clearInterval(timer); button.dataset.rec = ""; button.classList.remove("is-on"); button.setAttribute("aria-pressed", "false"); onTick?.(null); textarea.dispatchEvent(new Event("input")); };
+      rec.onend = stop;
+      rec.onerror = (e) => { if (e.error !== "no-speech") showToast(`语音识别中断：${e.error}`); stop(); };
+      const timer = setInterval(() => { const left = limit - Math.floor((Date.now() - started) / 1000); onTick?.(left); if (left <= 0) rec.stop(); }, 500);
+      button.dataset.rec = "1"; button.classList.add("is-on"); button.setAttribute("aria-pressed", "true"); button._rec = rec;
+      rec.start();
+      return rec;
+    }
+    async function checkSpoken() {
+      const text = $("spokenText").value.trim();
+      if (text.length < 20) { showToast("先讲几句，再对照原文。"); return; }
+      const prompt = `一位学生读完论文《${paper?.title || ""}》后，口头把它讲了一遍（下面是语音转写，可能有口语和识别错误，请忽略这些）。请像面谈老师一样对照原文检查他讲得全不全、对不对。
+
+逐项判断（ok／missing／wrong）并各给一句${lang().name}提示，提示只说缺什么、去哪一节看，不写出答案：
+- problem：研究要解决什么问题
+- method：怎么做的（对象、数据、关键设计）
+- result：主要发现
+- limit：局限或值得追问的地方
+再给 overall：一两句总评（先说讲得好的地方），和 next：下次开口前最该补的一点。
+只输出 JSON：{"problem":{"verdict":"","hint":""},"method":{...},"result":{...},"limit":{...},"overall":"","next":""}
+
+学生讲的：
+${text}
+
+论文全文（按页标注）：
+${await paperText(50000)}`;
+      if (!apiKey()) { await copyText(prompt, "没填 AI key，prompt 已复制。"); return; }
+      $("spokenStatus").textContent = "正在对照原文…";
+      try {
+        const out = parseJson(await callAi(prompt, `You check a spoken retelling against the paper. Reply with JSON only, in ${lang().en}.`));
+        if (!out) throw new Error("没有拿到可读的结果");
+        state.spoken = { text, feedback: out, at: Date.now() };
+        save(); renderSpoken();
+        $("spokenStatus").textContent = "";
+      } catch (e) { $("spokenStatus").textContent = `没成功（${e.message.slice(0, 60)}）。`; }
+    }
+    function renderSpoken() {
+      const box = $("spokenResult"); box.innerHTML = "";
+      const sp = state.spoken;
+      if (sp?.text && !$("spokenText").value) $("spokenText").value = sp.text;
+      if (!sp?.feedback) return;
+      const f = sp.feedback;
+      const names = { problem: "问题", method: "方法", result: "结果", limit: "局限" };
+      Object.entries(names).forEach(([k, n]) => {
+        const v = f[k]; if (!v) return;
+        const row = el("div", "row");
+        row.append(el("span", `pill ${v.verdict || ""}`, `${{ ok: "✓", missing: "⚠", wrong: "✗" }[v.verdict] || "·"} ${n}`), el("span", "", v.hint || ""));
+        box.append(row);
+      });
+      if (f.overall) box.append(el("p", "", f.overall));
+      if (f.next) { const nx = el("p", "quiet"); nx.append(el("b", "", "下次先补："), ` ${f.next}`); box.append(nx); }
+    }
+
+    // ---------- finish card and retelling a week later ----------
+    const DAY = 86400000;
+    function cardDone() { const c = state.card || {}; return !!(c.one && c.method && c.limit); }
+    function markFinished() {
+      if (cardDone() && !state.finishedAt) { state.finishedAt = Date.now(); save(); }
+      renderFinish();
+    }
+    function renderFinish() {
+      const box = $("finishCard");
+      if (!state.finishedAt || !cardDone()) { box.classList.add("hidden"); return; }
+      box.classList.remove("hidden"); box.innerHTML = "";
+      const days = Math.max(1, Math.round((state.finishedAt - (state.startedAt || state.finishedAt)) / DAY));
+      box.append(el("h4", "", `读完了 · ${new Date(state.finishedAt).toLocaleDateString("sv-SE")}`));
+      box.append(el("div", "one", state.card.one));
+      const stats = el("div", "stats");
+      [[days, "天"], [state.annotations.filter((a) => a.kind !== "ai").length, "条批注"], [state.terms.length, "个术语"], [(state.interview?.answers || []).filter(Boolean).length, "题面谈"]].forEach(([n, l]) => { const d = el("div"); d.append(el("b", "", String(n)), l); stats.append(d); });
+      box.append(stats);
+    }
+    function renderRetell() {
+      const box = $("retell"); box.classList.add("hidden"); box.innerHTML = "";
+      const hist = state.recapHistory || [];
+      const last = state.finishedAt || 0;
+      const since = Date.now() - Math.max(last, ...hist.map((h) => h.at || 0));
+      if (last && since > 7 * DAY && cardDone() && state.recap.q1) {
+        box.classList.remove("hidden");
+        box.append(`距上次读完已经 ${Math.floor(since / DAY)} 天。不看笔记，再用三句话讲一遍？讲完可以和上次的对比。`);
+        const b = el("button", "link", "　再讲一遍");
+        b.addEventListener("click", () => {
+          (state.recapHistory = state.recapHistory || []).push({ at: Date.now(), recap: { ...state.recap }, feedback: { ...state.feedback } });
+          state.recap = { q1: "", q2: "", q3: "" }; state.feedback = {};
+          save(); restoreFields(); $("q1").focus();
+        });
+        box.append(b);
+      }
+      const hb = $("recapHistory"); hb.classList.add("hidden"); hb.innerHTML = "";
+      if (hist.length) {
+        hb.classList.remove("hidden");
+        hist.slice().reverse().forEach((h) => {
+          const d = document.createElement("details");
+          d.append(el("summary", "", `上次的复述 · ${new Date(h.at).toLocaleDateString("sv-SE")}`));
+          d.append(el("p", "", `1 ${h.recap.q1 || ""}\n2 ${h.recap.q2 || ""}\n3 ${h.recap.q3 || ""}`));
+          hb.append(d);
+        });
+      }
+    }
+
+    // ---------- dwell: which sections got read ----------
+    let dwellIdx = -1;
+    let dwellDirty = 0;
+    setInterval(() => {
+      if (document.visibilityState !== "visible" || !pdfDoc || !state || state.pass === "recap" || dwellIdx < 0 || !headings[dwellIdx]) return;
+      const k = sectionKey(headings[dwellIdx]);
+      state.dwell = state.dwell || {};
+      state.dwell[k] = (state.dwell[k] || 0) + 1;
+      if (++dwellDirty >= 10) { dwellDirty = 0; save(); }
+    }, 1000);
+    function renderNudge() {
+      const box = $("nudge"); box.classList.add("hidden"); box.innerHTML = "";
+      if (!headings.length || !state.dwell) return;
+      const skip = readableSections().filter((h) => !/abstract|introduction|related|background/i.test(h.title)).map((h) => ({ h, s: state.dwell[sectionKey(h)] || 0 }))
+        .filter((x) => x.s < 20).sort((a, b) => (/method|material|result|experiment|approach|model/i.test(b.h.title) ? 1 : 0) - (/method|material|result|experiment|approach|model/i.test(a.h.title) ? 1 : 0) || a.s - b.s)[0];
+      if (!skip) return;
+      box.classList.remove("hidden");
+      box.append(`「${skip.h.title}」你${skip.s ? `只停了 ${skip.s} 秒` : "还没看"}。写复述前要不要回去看看？`);
+      const go = el("button", "link", "去看");
+      go.addEventListener("click", () => { setPass("read"); setTimeout(() => scrollToPos(skip.h.page, skip.h.top), 80); });
+      box.append(go);
+    }
+
+    // ---------- follow-up questions on an AI answer ----------
+    async function askFollowup(parent, question, card) {
+      const body = el("div", "quiet", "AI 思考中…");
+      card.append(body);
+      const pageText = await pageTextOf(parent.page);
+      const prompt = `这是读者和你关于论文《${paper?.title || ""}》第 ${parent.page} 页一段话的对话。
+原文：${parent.quote || "（框选区域）"}
+上一轮问题：${parent.question || "解释这段"}
+上一轮回答：${parent.text}
+
+读者接着问：${question}
+
+要求：用${lang().name}回答，关键术语保留英文；直接回答追问，不重复上一轮；全文不超过 200 字；只根据原文说话，原文没写的要说明是推测；结尾写“依据：p.页码”。
+
+这一页的原文（供参考）：
+${pageText.slice(0, 3000)}`;
+      if (!apiKey()) { await copyText(prompt, "没填 AI key，prompt 已复制。"); body.remove(); return; }
+      try {
+        const answer = await callAi(prompt);
+        const a = { id: uid(), kind: "ai", page: parent.page, rects: parent.rects, quote: "", question, text: answer, parentId: parent.id, created: new Date().toISOString() };
+        state.annotations.push(a); save(); renderMargin(parent.page);
+      } catch (e) { body.textContent = `没成功：${e.message.slice(0, 60)}`; }
+    }
+
+    // ---------- talk card as an image ----------
+    function wrapText(ctx, text, maxW) {
+      const lines = []; let cur = "";
+      for (const ch of String(text || "")) {
+        if (ch === "\n") { lines.push(cur); cur = ""; continue; }
+        const next = cur + ch;
+        if (ctx.measureText(next).width > maxW && cur) { lines.push(cur); cur = ch; } else cur = next;
+      }
+      if (cur) lines.push(cur);
+      return lines;
+    }
+    function talkCardPng() {
+      const c = state.card || {};
+      const W = 1080, pad = 72, dpr = 2;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const serif = 'Georgia,"Songti SC","Hiragino Mincho ProN",serif';
+      const sans = '-apple-system,"PingFang SC","Hiragino Sans",sans-serif';
+      // Measure first, then draw.
+      ctx.font = `600 40px ${serif}`;
+      const titleLines = wrapText(ctx, paper?.title || "", W - pad * 2);
+      const blocks = [["一句话", c.one], ["方法", c.method], ["局限", c.limit], ["想问导师", c.ask]].filter(([, v]) => v);
+      ctx.font = `28px ${sans}`;
+      const blockLines = blocks.map(([k, v]) => [k, wrapText(ctx, v, W - pad * 2)]);
+      const H = pad + titleLines.length * 52 + 40 + blockLines.reduce((h, [, ls]) => h + 34 + ls.length * 42 + 28, 0) + 70;
+      canvas.width = W * dpr; canvas.height = H * dpr; ctx.scale(dpr, dpr);
+      ctx.fillStyle = "#f2f2f0"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#fff"; ctx.fillRect(24, 24, W - 48, H - 48);
+      let y = pad;
+      ctx.fillStyle = "#1c1c1e"; ctx.font = `600 40px ${serif}`;
+      titleLines.forEach((l) => { ctx.fillText(l, pad, y + 36); y += 52; });
+      y += 40;
+      blockLines.forEach(([k, ls]) => {
+        ctx.fillStyle = "#8e8e93"; ctx.font = `22px ${sans}`; ctx.fillText(k, pad, y + 20); y += 34;
+        ctx.fillStyle = "#1c1c1e"; ctx.font = `28px ${sans}`;
+        ls.forEach((l) => { ctx.fillText(l, pad, y + 28); y += 42; });
+        y += 28;
+      });
+      ctx.fillStyle = "#8e8e93"; ctx.font = `20px ${sans}`;
+      ctx.fillText(`${paper?.meta || ""}　·　${new Date().toLocaleDateString("sv-SE")}　·　Noesis`, pad, H - 48);
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png"); a.download = `${fileName()} 能聊卡.png`; a.click();
+    }
+
+    // ---------- academic phrases worth keeping ----------
+    async function extractPhrases() {
+      if (!pdfDoc) return;
+      const ja = lang().code === "ja";
+      const prompt = `从论文《${paper?.title || ""}》里挑出 8 个在学术写作和面谈里可以反复使用的英文表达（句式或搭配，如 "we hypothesized that …"、"a dose-dependent association between … and …"），要原文里真的出现过的。
+每条给：en（原文表达，可截成短语）、use（一句${lang().name}说明什么时候用）、say（${ja ? "面谈时对应的日语说法，です・ます体" : `用${lang().name}怎么说`}）。
+只输出 JSON：{"phrases":[{"en":"","use":"","say":""}]}
+
+论文全文（按页标注）：
+${await paperText(40000)}`;
+      if (!apiKey()) { await copyText(prompt, "没填 AI key，prompt 已复制。"); return; }
+      $("phraseBtn").textContent = "挑选中…";
+      try {
+        const out = parseJson(await callAi(prompt, `Reply with JSON only. Explanations in ${lang().en}.`));
+        if (!out?.phrases) throw new Error("没有拿到结果");
+        state.phrases = out.phrases.slice(0, 10); save(); renderPhrases();
+      } catch (e) { showToast(`没成功：${e.message.slice(0, 60)}`); }
+      finally { $("phraseBtn").textContent = state.phrases?.length ? "重新挑" : "挑出表达"; }
+    }
+    function renderPhrases() {
+      const box = $("phraseList"); box.innerHTML = "";
+      $("phraseBtn").textContent = state.phrases?.length ? "重新挑" : "挑出表达";
+      if (!state.phrases?.length) return;
+      const list = el("div", "phr");
+      state.phrases.forEach((p) => {
+        const b = el("button");
+        b.append(el("b", "", p.en), p.use || "", p.say ? el("i", "", `　${p.say}`) : "");
+        b.addEventListener("click", () => copyText(p.en));
+        list.append(b);
+      });
+      box.append(list);
+    }
+
+    // ---------- one-page brief for a professor ----------
+    function onePager(pk) {
+      const papers = pk.paperIds.map((id) => library().find((p) => p.id === id)).filter(Boolean);
+      const esc = (t) => String(t || "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+      const sm = pk.summary || {};
+      const li = (xs) => (xs || []).map((x) => `<li>${esc(x)}</li>`).join("");
+      const paperRows = papers.map((p) => {
+        const st = readJson(stateKey(p.id), null) || {};
+        const c = st.card || {};
+        return `<div class="p"><b>${esc(p.title)}</b><span>${esc(p.meta || "")}</span>${c.one ? `<p>${esc(c.one)}</p>` : st.skeleton?.answer ? `<p>${esc(st.skeleton.answer)}</p>` : ""}${c.ask ? `<p class="q">想问：${esc(c.ask)}</p>` : ""}</div>`;
+      }).join("");
+      const html = `<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>${esc(pk.name)} · 面谈一页纸</title>
+<style>body{font:13px/1.6 -apple-system,"PingFang SC","Hiragino Sans",sans-serif;color:#1c1c1e;max-width:760px;margin:36px auto;padding:0 24px}h1{font:600 24px Georgia,"Songti SC",serif;margin:0}h2{font-size:12px;letter-spacing:.06em;color:#8e8e93;margin:26px 0 8px;text-transform:uppercase}.sub{color:#55555a;margin:2px 0 0}ul{margin:4px 0;padding-left:18px}.p{margin:0 0 12px;padding:10px 12px;background:#f6f6f4;border-radius:8px}.p b{display:block}.p span{color:#8e8e93;font-size:12px}.p p{margin:4px 0 0}.p .q{color:#3559c7}.letter{white-space:pre-wrap;background:#f6f6f4;padding:12px 14px;border-radius:8px}.foot{margin-top:30px;color:#8e8e93;font-size:11px}@media print{body{margin:0}button{display:none}}</style></head><body>
+<button onclick="print()" style="float:right;padding:6px 12px;border:0;border-radius:8px;background:#1c1c1e;color:#fff;cursor:pointer">打印 / 存成 PDF</button>
+<h1>${esc(pk.name)}</h1><p class="sub">${esc(pk.institution || "")}</p>
+${sm.line ? `<h2>研究主线</h2><p>${esc(sm.line)}</p>` : ""}
+${sm.themes?.length ? `<h2>主题与方法</h2><ul>${li(sm.themes)}${li(sm.methods)}</ul>${sm.shift ? `<p>近年变化：${esc(sm.shift)}</p>` : ""}` : ""}
+${sm.angle ? `<h2>我可以接上的点</h2><p>${esc(sm.angle)}</p>` : ""}
+<h2>读过的论文</h2>${paperRows || "<p>还没读。</p>"}
+${sm.questions?.length ? `<h2>可以问的问题</h2><ul>${li(sm.questions)}</ul>` : ""}
+${pk.letter?.body ? `<h2>首联信草稿</h2><div class="letter">${esc(pk.letter.subject ? `${pk.letter.subject}\n\n` : "")}${esc(pk.letter.body)}</div>` : ""}
+<p class="foot">${new Date().toLocaleDateString("sv-SE")} · Noesis</p></body></html>`;
+      const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
+    // ---------- follow the citations: build a pack from the most-cited references ----------
+    async function citationChainPack() {
+      if (!paper?.id?.startsWith("arxiv-")) { showToast("顺着引用读目前只支持 arXiv 论文。"); return; }
+      $("citeChain").textContent = "查引用…";
+      try {
+        const list = await s2References();
+        const picks = list.filter((x) => x.externalIds?.ArXiv || x.openAccessPdf?.url).sort((a, b) => (b.citationCount || 0) - (a.citationCount || 0)).slice(0, 3);
+        if (!picks.length) { showToast("没查到可直接读的引用文献。"); return; }
+        const pack = { id: `pack-chain-${paper.id}`, name: `《${(paper.title || "").slice(0, 30)}》的引用链`, institution: "", paperIds: [], summary: null, created: new Date().toISOString() };
+        picks.forEach((x) => {
+          const e = metaToEntry({ title: x.title, year: x.year, venue: x.venue, arxiv: x.externalIds?.ArXiv || null, doi: x.externalIds?.DOI || null, pdf: x.openAccessPdf?.url || null, openalex: null });
+          if (!e) return;
+          e.pack = pack.id; e.abstract = (x.abstract || "").slice(0, 1500);
+          addPaperQuiet(e); pack.paperIds.push(e.id);
+        });
+        writeJson(PACKS_KEY, [...packs().filter((p) => p.id !== pack.id), pack]);
+        renderPacks(); renderLibrary();
+        showToast(`已建好引用链论文包（${pack.paperIds.length} 篇），在“我的论文”里。`);
+      } catch (e) { showToast("查引用失败，稍后再试。"); }
+      finally { $("citeChain").textContent = "顺着引用读"; }
+    }
+
+    // ---------- import .bib / .ris ----------
+    function parseRefsFile(text) {
+      const out = [];
+      if (/^\s*@\w+\s*[{(]/m.test(text)) {
+        text.split(/^\s*@/m).slice(1).forEach((chunk) => {
+          const f = {};
+          for (const m of chunk.matchAll(/(\w+)\s*=\s*(?:\{((?:[^{}]|\{[^{}]*\})*)\}|"([^"]*)"|(\S+))\s*,?/g)) f[m[1].toLowerCase()] = (m[2] ?? m[3] ?? m[4] ?? "").replace(/[{}]/g, "").trim();
+          out.push({ title: f.title, doi: f.doi, url: f.url, arxiv: f.eprint && /^\d{4}\.\d{4,5}/.test(f.eprint) ? f.eprint : null, year: f.year, venue: f.journal || f.booktitle, author: f.author });
+        });
+      } else {
+        let cur = null;
+        text.split(/\r?\n/).forEach((line) => {
+          const m = line.match(/^([A-Z][A-Z0-9])\s{2}-\s?(.*)$/); if (!m) return;
+          const [, tag, val] = m;
+          if (tag === "TY") cur = { authors: [] };
+          if (!cur) return;
+          if (tag === "TI" || tag === "T1") cur.title = cur.title || val;
+          if (tag === "DO") cur.doi = val;
+          if (tag === "UR" || tag === "L1") cur.url = cur.url || val;
+          if (tag === "PY" || tag === "Y1") cur.year = val.slice(0, 4);
+          if (tag === "JO" || tag === "T2" || tag === "JF") cur.venue = cur.venue || val;
+          if (tag === "AU" || tag === "A1") cur.authors.push(val);
+          if (tag === "ER") { cur.author = cur.authors.join(" and "); out.push(cur); cur = null; }
+        });
+      }
+      return out.filter((r) => r.title || r.doi || r.url);
+    }
+    async function importRefs(file) {
+      const refs = parseRefsFile(await file.text());
+      if (!refs.length) { showToast("没有从这个文件里读到文献。"); return; }
+      let added = 0, noPdf = 0;
+      for (const r of refs.slice(0, 60)) {
+        const arx = r.arxiv || (r.url || "").match(/arxiv\.org\/(?:abs|pdf)\/(\d{4}\.\d{4,5})/)?.[1] || (r.doi || "").match(/arxiv\.(\d{4}\.\d{4,5})/i)?.[1];
+        let entry;
+        if (arx) { entry = parseSource(arx); entry.title = r.title || ""; entry.meta = `arXiv ${arx}${r.year ? ` · ${r.year}` : ""}`; }
+        else {
+          let pdf = null;
+          if (r.doi) {
+            try { const w = await fetchJson(`https://api.openalex.org/works/doi:${encodeURIComponent(r.doi.replace(/^https?:\/\/doi\.org\//, ""))}?select=best_oa_location`, 8000); pdf = w.best_oa_location?.pdf_url || null; } catch {}
+          }
+          const doi = r.doi ? r.doi.replace(/^https?:\/\/doi\.org\//, "") : null;
+          entry = { id: `ref-${(doi || r.title || r.url).replace(/\W+/g, "").slice(-28).toLowerCase()}`, source: "url", pdfUrl: pdf, link: doi ? `https://doi.org/${doi}` : r.url || null, title: r.title || doi || r.url, meta: [r.venue, r.year].filter(Boolean).join(" · ") };
+          if (!pdf) noPdf++;
+        }
+        if (addPaperQuiet(entry)) added++;
+      }
+      renderLibrary();
+      showToast(`导入 ${added} 篇${noPdf ? `，其中 ${noPdf} 篇没有公开 PDF，需要在列表里上传` : ""}。`);
+    }
+
+    // ---------- first run ----------
+    const WELCOME_KEY = "noesis.reader.v4.welcomed";
+    function maybeWelcome() {
+      if (localStorage.getItem(WELCOME_KEY)) return;
+      $("welcome").classList.remove("hidden");
+    }
+    function closeWelcome() { localStorage.setItem(WELCOME_KEY, "1"); $("welcome").classList.add("hidden"); }
+
     // ---------- rail ----------
     function renderAll() { renderSkeleton(); renderToc(); renderFigs(); renderTerms(); renderProgress(); }
 
@@ -1560,6 +3492,9 @@ ${terms || "-"}
       label.title = f.caption;
       card.append(frame, label);
       card.addEventListener("click", onGo);
+      let peek = null;
+      card.addEventListener("mouseenter", () => { peek = setTimeout(() => { card.classList.add("is-peek"); showFigure(f.kind, f.num, card.getBoundingClientRect()); }, 450); });
+      card.addEventListener("mouseleave", () => { clearTimeout(peek); if (card.classList.contains("is-peek")) { card.classList.remove("is-peek"); $("figPop").style.display = "none"; } });
       thumbQueue.push([thumb, f]);
       drainThumbs();
       return card;
@@ -1645,6 +3580,7 @@ ${terms || "-"}
       const done = readableSections().filter((h) => state.sectionsDone.includes(sectionKey(h))).length;
       $("tocProgress").textContent = total ? `${done}/${total}` : "";
       $("readLabel").textContent = total ? `精读 · ${done}/${total} 节` : "精读";
+      $("progressBar").style.width = total ? `${Math.round(done / total * 100)}%` : "0";
       const btns = document.querySelectorAll(".passes button");
       btns[0].classList.toggle("done", !!state.skeleton.done);
       btns[1].classList.toggle("done", total > 0 && done === total);
@@ -1676,7 +3612,7 @@ ${terms || "-"}
       if (state.feedback[f.dataset.recap]) { delete state.feedback[f.dataset.recap]; renderFeedback(); }
       save(); renderProgress();
     }));
-    document.querySelectorAll("[data-card]").forEach((f) => f.addEventListener("input", () => { state.card[f.dataset.card] = f.value; save(); }));
+    document.querySelectorAll("[data-card]").forEach((f) => f.addEventListener("input", () => { state.card[f.dataset.card] = f.value; save(); markFinished(); }));
     $("checkRecap").addEventListener("click", checkRecap);
     $("fillCard").addEventListener("click", fillCard);
     $("draftCard").addEventListener("click", draftCard);
@@ -1696,12 +3632,84 @@ ${terms || "-"}
       localStorage.setItem(MODEL_KEY, $("modelInput").value.trim());
       localStorage.setItem(VAULT_KEY, $("vaultInput").value.trim());
       localStorage.setItem(FOLDER_KEY, $("folderInput").value.trim());
+      localStorage.setItem(LANG_KEY, $("langInput").value);
+      loadTrans(); if (transOn()) for (const n of rendered.keys()) { renderTransCol(n); queueTranslate(n); }
+      localStorage.setItem("noesis.reader.v4.vision", $("visionInput").checked ? "1" : "0");
+      localStorage.setItem("noesis.reader.v4.theme", $("themeInput").value);
+      localStorage.setItem("noesis.reader.v4.invert", $("invertInput").checked ? "1" : "0");
+      applyLook();
       $("settings").classList.remove("is-on");
       showToast("已保存到这台设备的浏览器。");
     });
     $("clearKey").addEventListener("click", () => { localStorage.removeItem(KEY_KEY); $("apiKey").value = ""; showToast("API key 已清除。"); });
 
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") { hidePops(); closeLibrary(); $("settings").classList.remove("is-on"); } });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { hidePops(); closeLibrary(); closeSearch(); $("settings").classList.remove("is-on"); }
+      // Cmd/Ctrl+F searches the whole paper, not just the pages on screen.
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f" && pdfDoc) { e.preventDefault(); openSearch(); }
+    });
+
+    // Search
+    $("searchToggle").addEventListener("click", () => $("searchBar").classList.contains("is-on") ? closeSearch() : openSearch());
+    $("searchClose").addEventListener("click", closeSearch);
+    let searchTimer = null;
+    $("searchInput").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 200); });
+    $("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); gotoHit(searchIdx + (e.shiftKey ? -1 : 1)); } });
+    $("searchNext").addEventListener("click", () => gotoHit(searchIdx + 1));
+    $("searchPrev").addEventListener("click", () => gotoHit(searchIdx - 1));
+
+    // Backup
+    $("exportAll").addEventListener("click", exportAll);
+    $("importAllBtn").addEventListener("click", () => $("importFile").click());
+    $("importFile").addEventListener("change", (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) importAll(f); });
+
+    // Spoken retelling, phrases, talk-card image, citation chain, imports, welcome
+    $("spokenMic").addEventListener("click", () => micInto($("spokenText"), $("spokenMic"), 60, (left) => { $("spokenTimer").textContent = left == null ? "" : `还剩 ${left} 秒`; $("spokenMic").textContent = left == null ? "🎙 开始说" : "■ 停"; }));
+    $("spokenCheck").addEventListener("click", checkSpoken);
+    $("phraseBtn").addEventListener("click", extractPhrases);
+    $("cardPng").addEventListener("click", () => { if (!cardDone() && !state.card.one) { showToast("先填能聊卡。"); return; } talkCardPng(); });
+    $("citeChain").addEventListener("click", citationChainPack);
+    $("importRefs").addEventListener("change", (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) importRefs(f); });
+    $("welcomeTry").addEventListener("click", () => { closeWelcome(); if (!library().some((p) => p.id === SAMPLE.id)) addPaper({ ...SAMPLE }); else openPaper(SAMPLE.id); setTimeout(() => setPass("skeleton"), 300); showToast("第一遍：先看摘要、图和结论，写一句这篇在解决什么。"); });
+    $("welcomeAdd").addEventListener("click", () => { closeWelcome(); openLibrary(true); });
+
+    // Interview and letters
+    $("ivStart").addEventListener("click", () => {
+      if (ivState().questions.length && !confirm("重新出一组题？这一轮的回答会清掉。")) return;
+      startInterview();
+    });
+    $("myProfile").value = localStorage.getItem(PROFILE_KEY) || "";
+    $("myProfile").addEventListener("input", () => localStorage.setItem(PROFILE_KEY, $("myProfile").value));
+
+    // Translation
+    $("transToggle").addEventListener("click", () => setTransOn(!transOn(), true));
+    $("quickTrans").addEventListener("click", quickTranslate);
+
+    // AI skim
+    $("skimBtn").addEventListener("click", skimPaper);
+    document.querySelectorAll("[data-skim]").forEach((c) => c.addEventListener("change", () => {
+      state.skimShow = { ...(state.skimShow || {}), [c.dataset.skim]: c.checked };
+      save();
+      for (const n of rendered.keys()) drawHighlights(n);
+    }));
+
+    // Drawer tabs and professor packs
+    document.querySelectorAll("[data-dtab]").forEach((b) => b.addEventListener("click", () => {
+      document.querySelectorAll("[data-dtab]").forEach((x) => x.classList.toggle("is-on", x === b));
+      document.querySelectorAll(".dpane").forEach((p) => p.classList.toggle("is-on", p.id === `dpane-${b.dataset.dtab}`));
+    }));
+    $("profSearch").addEventListener("click", searchProfessor);
+    $("profName").addEventListener("keydown", (e) => { if (e.key === "Enter") searchProfessor(); });
+    $("attachPdf").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      const id = e.target.dataset.target;
+      e.target.value = "";
+      if (!file || !id) return;
+      try { await idbPut(id, await file.arrayBuffer()); } catch { showToast("这台设备不能保存上传的 PDF。"); return; }
+      saveLibrary(library().map((p) => p.id === id ? { ...p, source: "upload", uploadedName: file.name } : p));
+      renderLibrary();
+      openPaper(id);
+    });
     document.addEventListener("mousedown", (e) => {
       if (!e.target.closest(".pop")) hidePops();
       if (!e.target.closest("#settings, #settingsToggle")) $("settings").classList.remove("is-on");
@@ -1758,15 +3766,26 @@ ${terms || "-"}
       $("baseLabel").classList.toggle("hidden", !custom);
       $("modelInput").placeholder = PROVIDERS[$("providerInput").value].model || "模型名";
     }
-    $("providerInput").addEventListener("change", () => { $("modelInput").value = PROVIDERS[$("providerInput").value].model; syncProvider(); });
+    $("providerInput").addEventListener("change", () => { $("modelInput").value = PROVIDERS[$("providerInput").value].model; $("visionInput").checked = $("providerInput").value === "openai"; syncProvider(); });
+    { const v = localStorage.getItem("noesis.reader.v4.vision"); $("visionInput").checked = v == null ? $("providerInput").value === "openai" : v === "1"; }
     syncProvider();
     $("vaultInput").value = localStorage.getItem(VAULT_KEY) || "";
     $("folderInput").value = localStorage.getItem(FOLDER_KEY) || "";
+    $("langInput").value = localStorage.getItem(LANG_KEY) || "zh";
+    $("themeInput").value = localStorage.getItem("noesis.reader.v4.theme") || "plain";
+    $("invertInput").checked = localStorage.getItem("noesis.reader.v4.invert") === "1";
+    function applyLook() {
+      document.documentElement.dataset.theme = $("themeInput").value;
+      document.body.classList.toggle("invert-paper", $("invertInput").checked);
+    }
+    applyLook();
+    renderPacks();
     if (!library().length) saveLibrary([{ ...SAMPLE, addedAt: new Date().toISOString() }]);
     state = blankState();
     renderLibrary();
     const startId = localStorage.getItem(CURRENT_KEY);
     openPaper(library().some((p) => p.id === startId) ? startId : library()[0].id);
+    maybeWelcome();
 
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
       window.addEventListener("load", () => { navigator.serviceWorker.register("./service-worker.js").catch(() => {}); });
