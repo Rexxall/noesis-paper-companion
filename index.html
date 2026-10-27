@@ -3784,7 +3784,15 @@ ${pk.letter?.body ? `<h2>首联信草稿</h2><div class="letter">${esc(pk.letter
     state = blankState();
     renderLibrary();
     const startId = localStorage.getItem(CURRENT_KEY);
-    openPaper(library().some((p) => p.id === startId) ? startId : library()[0].id);
+    // ?open=<arXiv ID or PDF link>&title=… opens that paper straight away, e.g. from a link on another page.
+    const query = new URLSearchParams(location.search);
+    const linked = parseSource(query.get("open") || "");
+    if (linked) {
+      if (query.get("title")) linked.title = query.get("title");
+      history.replaceState(null, "", location.pathname);
+      const known = library().find((p) => p.pdfUrl === linked.pdfUrl);
+      known ? openPaper(known.id) : addPaper(linked);
+    } else openPaper(library().some((p) => p.id === startId) ? startId : library()[0].id);
     maybeWelcome();
 
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
