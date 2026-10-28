@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f2f2f0" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1b1b1d" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <title>Noesis Paper Reader</title>
@@ -12,24 +12,30 @@
     /* Quiet UI around the paper: neutral greys, one blue accent, system type. */
     :root {
       color-scheme: light;
-      --bg:#f2f2f0; --rail:#ebebe8; --card:#fff; --field:#f6f6f4; --hover:rgba(0,0,0,.045);
-      --ink:#1c1c1e; --ink2:#55555a; --mute:#8e8e93; --line:#dcdcd8; --hair:rgba(0,0,0,.06);
-      --accent:#3559c7; --accent-soft:#e6ecfb; --accent-ink:#fff;
-      --mark:rgba(255,214,10,.36); --ai-mark:rgba(53,89,199,.16); --note-bar:#e3b400;
-      --ok:#2f8a57; --warn:#b26a00; --bad:#c0392b;
-      --shadow-sm:0 1px 2px rgba(0,0,0,.07); --shadow-pop:0 12px 32px -10px rgba(0,0,0,.28),0 0 0 1px rgba(0,0,0,.05);
+      /* Glass design system (2026-10-29): solid content, glass for the controls that float above it */
+      --bg:#f5f5f7; --rail:#ececef; --card:#fff; --field:rgba(0,0,0,.045); --hover:rgba(0,0,0,.05);
+      --ink:#1d1d1f; --ink2:#48484d; --mute:#86868b; --line:rgba(0,0,0,.1); --hair:rgba(0,0,0,.07);
+      --accent:#007aff; --accent-soft:rgba(0,122,255,.12); --accent-ink:#fff;
+      --mark:rgba(255,214,10,.36); --ai-mark:rgba(0,122,255,.14); --note-bar:#ffb800;
+      --ok:#248a3d; --warn:#c93400; --bad:#d70015;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.06),0 0 0 .5px rgba(0,0,0,.06); --shadow-pop:0 24px 60px -14px rgba(0,0,0,.28),0 8px 20px rgba(0,0,0,.08);
+      --glass:rgba(255,255,255,.68); --glass-solid:#f7f7f9; --blur:blur(28px) saturate(170%);
+      --glint:rgba(255,255,255,.6); --rim:rgba(255,255,255,.3); --glass-hair:rgba(0,0,0,.1);
+      --ease:cubic-bezier(.2,.8,.2,1); --ease-sheet:cubic-bezier(.32,.72,0,1);
       --page-filter:none;
       --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans","Noto Sans CJK SC",sans-serif;
     }
     @media (prefers-color-scheme: dark) {
       :root {
         color-scheme: dark;
-        --bg:#1b1b1d; --rail:#222225; --card:#2a2a2d; --field:#232326; --hover:rgba(255,255,255,.06);
-        --ink:#f2f2f3; --ink2:#c5c5c9; --mute:#8d8d93; --line:#3a3a3e; --hair:rgba(255,255,255,.07);
-        --accent:#8aa4ff; --accent-soft:rgba(138,164,255,.16); --accent-ink:#111;
-        --mark:rgba(255,214,10,.42); --ai-mark:rgba(110,140,255,.28);
-        --ok:#5cc28a; --warn:#e0a24a; --bad:#ff7b6b;
-        --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow-pop:0 14px 36px -10px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06);
+        --bg:#1c1c1e; --rail:#232326; --card:#2c2c2e; --field:rgba(255,255,255,.07); --hover:rgba(255,255,255,.07);
+        --ink:#f5f5f7; --ink2:#c7c7cc; --mute:#98989d; --line:rgba(255,255,255,.12); --hair:rgba(255,255,255,.08);
+        --accent:#0a84ff; --accent-soft:rgba(10,132,255,.2); --accent-ink:#fff;
+        --mark:rgba(255,214,10,.42); --ai-mark:rgba(10,132,255,.28);
+        --ok:#30d158; --warn:#ff9f0a; --bad:#ff453a;
+        --shadow-sm:0 1px 2px rgba(0,0,0,.4),0 0 0 .5px rgba(255,255,255,.06); --shadow-pop:0 24px 60px -14px rgba(0,0,0,.7),0 8px 20px rgba(0,0,0,.3);
+        --glass:rgba(44,44,46,.62); --glass-solid:#2a2a2c;
+        --glint:rgba(255,255,255,.16); --rim:rgba(255,255,255,.1); --glass-hair:rgba(255,255,255,.12);
         --page-filter:brightness(.9);
       }
     }
@@ -436,7 +442,6 @@
 
 
     /* ---------- Personal touches ---------- */
-    @media (prefers-color-scheme: light) { :root[data-theme=mist] { --bg:#f3efe6; --rail:#ece7dc; --card:#fffdf8; --field:#f6f2ea; --hover:rgba(42,41,37,.05); --ink:#2a2925; --ink2:#5b574f; --mute:#9b968b; --line:#ddd6c8; --hair:rgba(42,41,37,.08); --accent:#5f7f6b; --accent-soft:#e2eadf; --note-bar:#c4875c; --mark:rgba(222,170,60,.3); --ai-mark:rgba(95,127,107,.18); } }
     @media (prefers-color-scheme: dark) { body.invert-paper .page canvas { filter:invert(.92) hue-rotate(180deg); } }
     @keyframes pass-fade { from { opacity:0; transform:translateY(4px); } }
     body.switching .rail-skel, body.switching .rail-read, body.switching .recap { animation:pass-fade .22s ease-out; }
@@ -491,6 +496,44 @@
       #pages { padding-top:14px; }
       body[data-pass] .pager { left:50%; }
     }
+
+    /* ---------- Glass (design system 2026-10-29) ----------
+       Content (pages, rail lists, recap) stays solid. Bars, popovers, panels and toasts
+       float above it as glass with a lit top edge. Controls are capsules. */
+    .btn, .passes, .passes button, #openSource, .drawer-tabs, .drawer-tabs button { border-radius:999px; }
+    textarea, input, select { border-radius:10px; }
+    .card { border:0; border-radius:16px; background:var(--card); box-shadow:var(--shadow-sm); }
+    .lib-item { border-radius:10px; }
+    .btn.dark { background:var(--accent); color:var(--accent-ink); box-shadow:inset 0 1px 0 rgba(255,255,255,.25); }
+    .top .tools .btn.dark { background:var(--accent); color:var(--accent-ink); }
+    .passes { background:var(--field); padding:2px; }
+    .passes button.is-on { box-shadow:inset 0 1px 0 var(--glint), 0 0 0 .5px var(--glass-hair), 0 2px 6px rgba(0,0,0,.1); }
+    .top, .pager, .pop, .settings, .search-bar, .toast, .drawer, .welcome-card, .keys-card {
+      background:var(--glass);
+      -webkit-backdrop-filter:var(--blur);
+      backdrop-filter:var(--blur);
+    }
+    .top { border-bottom:0; box-shadow:inset 0 -.5px 0 var(--glass-hair); position:relative; z-index:6; }
+    .pager, .pop, .settings, .search-bar, .toast, .drawer, .welcome-card, .keys-card {
+      box-shadow:inset 0 1px 0 var(--glint), inset 0 0 0 .5px var(--rim), 0 0 0 .5px var(--glass-hair), var(--shadow-pop);
+    }
+    .pop, .settings, .search-bar { border-radius:16px; }
+    .welcome-card, .keys-card { border-radius:22px; }
+    .toast { color:var(--ink); font-weight:500; }
+    .drawer { border-radius:0 22px 22px 0; }
+    .pop, .settings, .welcome-card, .keys-card { animation:glass-in .34s var(--ease-sheet); }
+    @keyframes glass-in { from { opacity:0; transform:translateY(8px) scale(.98); } }
+    .welcome, .keys { background:rgba(0,0,0,.16); }
+    .note { border-left:0; border-radius:14px; padding:10px 14px 9px; box-shadow:inset 3px 0 0 var(--note-bar), var(--shadow-sm); }
+    .note.ai { box-shadow:inset 3px 0 0 var(--accent), var(--shadow-sm); }
+    .note.highlight { box-shadow:inset 3px 0 0 #f0d26a, var(--shadow-sm); }
+    #notePop .note { box-shadow:none; }
+    /* Fallbacks: no backdrop-filter, reduce transparency, more contrast, reduce motion */
+    @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { :root { --glass:var(--glass-solid); } }
+    @media (prefers-reduced-transparency: reduce) { :root { --glass:var(--glass-solid); --blur:none; --glint:transparent; } }
+    @media (prefers-contrast: more) { :root { --glass:var(--card); --blur:none; --line:rgba(127,127,127,.5); --hair:rgba(127,127,127,.4); --glass-hair:rgba(127,127,127,.6); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
+    @media (max-width: 640px) { :root { --blur:blur(16px) saturate(160%); } }
   </style>
 </head>
 <body data-pass="skeleton">
@@ -689,11 +732,6 @@
     <input id="apiKey" type="password" placeholder="不填也能用：会改为复制 prompt">
     <label for="modelInput">模型</label>
     <input id="modelInput">
-    <label for="themeInput">界面主题</label>
-    <select id="themeInput">
-      <option value="plain">中性灰</option>
-      <option value="mist">晨雾（暖纸色，浅色模式下）</option>
-    </select>
     <label class="inline-check"><input type="checkbox" id="invertInput"> 深色模式下把论文页反色</label>
     <label for="vaultInput">Obsidian 库名（不填就用最近打开的库）</label>
     <input id="vaultInput" placeholder="比如 我的笔记库">
@@ -3716,7 +3754,6 @@ ${pk.letter?.body ? `<h2>首联信草稿</h2><div class="letter">${esc(pk.letter
       localStorage.setItem(LANG_KEY, $("langInput").value);
       loadTrans(); if (transOn()) for (const n of rendered.keys()) { renderTransCol(n); queueTranslate(n); }
       localStorage.setItem("noesis.reader.v4.vision", $("visionInput").checked ? "1" : "0");
-      localStorage.setItem("noesis.reader.v4.theme", $("themeInput").value);
       localStorage.setItem("noesis.reader.v4.invert", $("invertInput").checked ? "1" : "0");
       applyLook();
       $("settings").classList.remove("is-on");
@@ -3907,10 +3944,8 @@ ${pk.letter?.body ? `<h2>首联信草稿</h2><div class="letter">${esc(pk.letter
     $("vaultInput").value = localStorage.getItem(VAULT_KEY) || "";
     $("folderInput").value = localStorage.getItem(FOLDER_KEY) || "";
     $("langInput").value = localStorage.getItem(LANG_KEY) || "zh";
-    $("themeInput").value = localStorage.getItem("noesis.reader.v4.theme") || "plain";
     $("invertInput").checked = localStorage.getItem("noesis.reader.v4.invert") === "1";
     function applyLook() {
-      document.documentElement.dataset.theme = $("themeInput").value;
       document.body.classList.toggle("invert-paper", $("invertInput").checked);
     }
     applyLook();
