@@ -244,6 +244,18 @@
     .lib-item strong { font-weight:500; font-size:13px; line-height:1.4; }
     .lib-item .link-del { justify-self:start; color:var(--mute); font-size:11.5px; opacity:0; }
     .lib-item:hover .link-del { opacity:1; }
+    .keys { position:fixed; inset:0; z-index:45; background:rgba(0,0,0,.18); display:none; place-items:center; padding:16px; }
+    .keys.is-on { display:grid; animation:pop-in .12s ease-out; }
+    .keys-card { background:var(--card); border-radius:14px; box-shadow:var(--shadow-pop); padding:16px 20px 14px; width:min(560px, 100%); max-height:calc(100vh - 32px); overflow:auto; }
+    .keys-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+    .keys-head h3 { margin:0; font:500 17px Georgia,"Songti SC","Hiragino Mincho ProN",serif; color:var(--ink); }
+    .keys-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:6px 28px; }
+    .keys-grid h4 { margin:10px 0 6px; font-size:11px; letter-spacing:.06em; color:var(--mute); font-weight:500; }
+    .keys-grid div { display:flex; align-items:center; gap:5px; padding:4px 0; border-bottom:1px solid var(--hair); font-size:13px; color:var(--ink2); }
+    .keys-grid div span { margin-left:auto; text-align:right; }
+    kbd { display:inline-grid; place-items:center; min-width:22px; height:22px; padding:0 6px; border:1px solid var(--line); border-bottom-width:2px; border-radius:6px; background:var(--bg); color:var(--ink); font:500 11.5px var(--sans); box-sizing:border-box; }
+    .keys-card > p { margin:12px 0 0; font-size:12px; }
+    .finish .time-line, #finishCard .time-line { margin-top:8px; font-size:12px; }
     .toast { position:fixed; z-index:40; left:50%; top:60px; transform:translateX(-50%); background:var(--ink); color:var(--bg); border-radius:999px; padding:8px 16px; font-size:12.5px; display:none; box-shadow:var(--shadow-pop); }
 
 
@@ -691,6 +703,7 @@
     <label>备份 / 换设备</label>
     <div class="row" style="margin-top:0"><button class="btn" id="exportAll">导出全部数据</button><button class="btn" id="importAllBtn">导入备份</button></div>
     <p class="quiet" style="margin:6px 0 0">包含论文列表、批注、术语、复述和设置；不含 API key 和上传的 PDF。</p>
+    <div class="row"><button class="link" id="keysBtn">快捷键（?）</button></div>
     <input id="importFile" type="file" accept="application/json,.json" hidden>
   </div>
 
@@ -734,6 +747,32 @@
         <button class="btn dark" id="welcomeTry">先试一篇</button>
         <button class="btn" id="welcomeAdd">添加我的论文</button>
       </div>
+    </div>
+  </div>
+  <div class="keys" id="keys" role="dialog" aria-modal="true" aria-label="快捷键">
+    <div class="keys-card">
+      <div class="keys-head"><h3>快捷键</h3><button class="btn" data-close aria-label="关闭">✕</button></div>
+      <div class="keys-grid">
+        <section>
+          <h4>阅读</h4>
+          <div><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><span>骨架 · 精读 · 复述</span></div>
+          <div><kbd>J</kbd><kbd>K</kbd><span>下一页 · 上一页</span></div>
+          <div><kbd>]</kbd><kbd>[</kbd><span>下一节 · 上一节</span></div>
+          <div><kbd>Home</kbd><kbd>End</kbd><span>开头 · 结尾</span></div>
+          <div><kbd>/</kbd><kbd>⌘F</kbd><span>全文搜索</span></div>
+          <div><kbd>T</kbd><span>对照翻译开关</span></div>
+        </section>
+        <section>
+          <h4>选中文字后</h4>
+          <div><kbd>T</kbd><span>翻译</span></div>
+          <div><kbd>N</kbd><span>批注</span></div>
+          <div><kbd>A</kbd><span>问 AI</span></div>
+          <div><kbd>M</kbd><span>记成术语</span></div>
+          <div><kbd>F</kbd><span>解释公式</span></div>
+          <div><kbd>H</kbd><span>高亮</span></div>
+        </section>
+      </div>
+      <p class="quiet">在输入框里打字时快捷键不生效。<kbd>?</kbd> 打开或关上这张卡，<kbd>Esc</kbd> 关闭。</p>
     </div>
   </div>
   <div class="toast" id="toast"></div>
@@ -915,7 +954,8 @@
         const del = el("button", "link-del", "删除");
         del.addEventListener("click", (e) => { e.stopPropagation(); removePaper(p.id); });
         row.append(del);
-        it.append(el("strong", "", p.title || "（正在读取标题…）"), el("span", "quiet", p.meta || ""), row);
+        const mins = minutesOf(readJson(stateKey(p.id), null));
+        it.append(el("strong", "", p.title || "（正在读取标题…）"), el("span", "quiet", [p.meta, mins ? `读了 ${mins} 分钟` : ""].filter(Boolean).join(" · ")), row);
         it.addEventListener("click", () => openPaper(p.id));
         it.addEventListener("keydown", (e) => { if (e.key === "Enter") openPaper(p.id); });
         return it;
@@ -1005,10 +1045,17 @@
         lines = new Map(); headings = []; figures = new Map(); figPageCache.clear(); thumbCache.clear();
         refs = []; refStart = null; refStyle = null; refByNum = new Map(); refByKey = new Map(); s2RefsPromise = null;
         paraCache.clear(); transQueue.length = 0;
-        currentPage = 1;
+        posArmed = false; clearTimeout(posTimer);
+        const resume = state?.lastPos && state.lastPos.page > 1 && state.lastPos.page <= doc.numPages ? state.lastPos : null;
+        currentPage = resume ? resume.page : 1;
         userZoomed = false;
         buildPages();
         renderAll();
+        if (resume) {
+          scrollToPos(resume.page, resume.top || 0, false);
+          showToast(`接着上次读到的第 ${resume.page} 页。按 Home 回到开头。`);
+        }
+        setTimeout(() => { if (token === loadToken) posArmed = true; }, 400);
         if (paper && !paper.title) {
           const title = await guessTitle(doc);
           if (token === loadToken && title) { updatePaper({ title }); $("paperTitle").textContent = title; }
@@ -1325,6 +1372,17 @@
       read.scrollTo({ top: wrap.offsetTop + top * scale - 40, behavior: smooth ? "smooth" : "auto" });
     }
     let scrollQueued = false;
+    // Where the reader is, kept per paper so reopening it comes back to the same spot.
+    let posArmed = false, posTimer = null;
+    function rememberPos(n) {
+      if (!posArmed || !state || !pdfDoc) return;
+      const wrap = wrapOf(n);
+      if (!wrap) return;
+      const top = Math.max(0, Math.round((read.scrollTop + 40 - wrap.offsetTop) / scale));
+      const target = state, id = paper?.id;
+      clearTimeout(posTimer);
+      posTimer = setTimeout(() => { target.lastPos = { page: n, top }; if (id) writeJson(stateKey(id), target); }, 800);
+    }
     read.addEventListener("scroll", () => {
       if (scrollQueued) return;
       scrollQueued = true;
@@ -1336,6 +1394,7 @@
         pagesBox.querySelectorAll(".page-wrap").forEach((w) => { if (w.offsetTop <= line) n = Number(w.dataset.page); });
         currentPage = n;
         $("pageCounter").textContent = `${n} / ${pdfDoc.numPages}`;
+        rememberPos(n);
         markCurrentSection(line);
       });
     });
@@ -2047,6 +2106,7 @@ ${await paperText(50000)}`;
 title: "${(paper?.title || "未命名论文").replace(/"/g, "'")}"
 source: ${paper?.link || paper?.meta || "本地上传"}
 date: ${today}
+reading_minutes: ${minutesOf(state)}
 tags: [paper]
 ---
 
@@ -3217,8 +3277,9 @@ ${await paperText(50000)}`;
       box.append(el("h4", "", `读完了 · ${new Date(state.finishedAt).toLocaleDateString("sv-SE")}`));
       box.append(el("div", "one", state.card.one));
       const stats = el("div", "stats");
-      [[days, "天"], [state.annotations.filter((a) => a.kind !== "ai").length, "条批注"], [state.terms.length, "个术语"], [(state.interview?.answers || []).filter(Boolean).length, "题面谈"]].forEach(([n, l]) => { const d = el("div"); d.append(el("b", "", String(n)), l); stats.append(d); });
+      [[days, "天"], [minutesOf(state), "分钟"], [state.annotations.filter((a) => a.kind !== "ai").length, "条批注"], [state.terms.length, "个术语"], [(state.interview?.answers || []).filter(Boolean).length, "题面谈"]].forEach(([n, l]) => { const d = el("div"); d.append(el("b", "", String(n)), l); stats.append(d); });
       box.append(stats);
+      box.append(el("div", "quiet time-line", timeLine(state)));
     }
     function renderRetell() {
       const box = $("retell"); box.classList.add("hidden"); box.innerHTML = "";
@@ -3258,6 +3319,26 @@ ${await paperText(50000)}`;
       state.dwell[k] = (state.dwell[k] || 0) + 1;
       if (++dwellDirty >= 10) { dwellDirty = 0; save(); }
     }, 1000);
+    // ---------- reading time: seconds actually spent on each pass ----------
+    // Counts only while the tab is visible and the reader did something in the last 90 seconds.
+    let lastActive = Date.now(), timeDirty = 0;
+    ["pointerdown", "keydown", "wheel", "mousemove", "touchstart"].forEach((ev) => document.addEventListener(ev, () => { lastActive = Date.now(); }, { passive: true }));
+    read.addEventListener("scroll", () => { lastActive = Date.now(); }, { passive: true });
+    setInterval(() => {
+      if (document.visibilityState !== "visible" || !pdfDoc || !state || Date.now() - lastActive > 90000) return;
+      state.time = state.time || {};
+      state.time[state.pass] = (state.time[state.pass] || 0) + 1;
+      if (++timeDirty >= 15) { timeDirty = 0; save(); }
+    }, 1000);
+    function minutesOf(s, pass) {
+      const t = s?.time || {};
+      const secs = pass ? t[pass] || 0 : (t.skeleton || 0) + (t.read || 0) + (t.recap || 0);
+      return Math.round(secs / 60);
+    }
+    function timeLine(s) {
+      return `骨架 ${minutesOf(s, "skeleton")} 分钟 · 精读 ${minutesOf(s, "read")} 分钟 · 复述 ${minutesOf(s, "recap")} 分钟`;
+    }
+
     function renderNudge() {
       const box = $("nudge"); box.classList.add("hidden"); box.innerHTML = "";
       if (!headings.length || !state.dwell) return;
@@ -3639,7 +3720,9 @@ ${pk.letter?.body ? `<h2>首联信草稿</h2><div class="letter">${esc(pk.letter
       localStorage.setItem("noesis.reader.v4.invert", $("invertInput").checked ? "1" : "0");
       applyLook();
       $("settings").classList.remove("is-on");
-      showToast("已保存到这台设备的浏览器。");
+      // A custom service has no default model, and many of them refuse a request without one.
+      const needsModel = $("providerInput").value === "custom" && apiKey() && !$("modelInput").value.trim();
+      showToast(needsModel ? "已保存。自定义服务还没填模型名，有的服务会因此报错。" : "已保存到这台设备的浏览器。");
     });
     $("clearKey").addEventListener("click", () => { localStorage.removeItem(KEY_KEY); $("apiKey").value = ""; showToast("API key 已清除。"); });
 
@@ -3647,7 +3730,59 @@ ${pk.letter?.body ? `<h2>首联信草稿</h2><div class="letter">${esc(pk.letter
       if (e.key === "Escape") { hidePops(); closeLibrary(); closeSearch(); $("settings").classList.remove("is-on"); }
       // Cmd/Ctrl+F searches the whole paper, not just the pages on screen.
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f" && pdfDoc) { e.preventDefault(); openSearch(); }
+      onShortcut(e);
     });
+
+    // ---------- keyboard shortcuts ----------
+    const SEL_KEYS = { t: "translate", n: "note", a: "ask", m: "term", f: "formula", h: "highlight" };
+    const PASS_KEYS = { 1: "skeleton", 2: "read", 3: "recap" };
+    function typing(e) {
+      const t = e.target;
+      return !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+    }
+    function jumpSection(step) {
+      const list = readableSections();
+      if (!list.length) return;
+      // scrollToPos leaves a heading 40px below the top, so the section the reader is in starts above this line.
+      const line = read.scrollTop + 60;
+      const at = (h) => (wrapOf(h.page)?.offsetTop ?? 0) + h.top * scale;
+      let idx = -1;
+      list.forEach((h, i) => { if (at(h) <= line) idx = i; });
+      const next = list[Math.max(0, Math.min(list.length - 1, idx + step))];
+      if (next) scrollToPos(next.page, next.top);
+    }
+    function toggleKeys(force) {
+      const box = $("keys");
+      const on = force ?? !box.classList.contains("is-on");
+      box.classList.toggle("is-on", on);
+    }
+    function onShortcut(e) {
+      if (e.key === "Escape") { toggleKeys(false); return; }
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || typing(e)) return;
+      const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      if (k === "?") { e.preventDefault(); toggleKeys(); return; }
+      if ($("selPop").style.display === "block" && SEL_KEYS[k]) {
+        const btn = $("selPop").querySelector(`[data-act="${SEL_KEYS[k]}"]`);
+        if (btn) { e.preventDefault(); btn.click(); }
+        return;
+      }
+      if (!paper || !state) return;
+      if (PASS_KEYS[k]) { e.preventDefault(); setPass(PASS_KEYS[k]); return; }
+      if (!pdfDoc) return;
+      const act = {
+        j: () => $("nextPage").click(),
+        k: () => $("prevPage").click(),
+        "]": () => jumpSection(1),
+        "[": () => jumpSection(-1),
+        "/": () => openSearch(),
+        t: () => $("transToggle").click(),
+        Home: () => read.scrollTo({ top: 0 }),
+        End: () => read.scrollTo({ top: read.scrollHeight })
+      }[k];
+      if (act) { e.preventDefault(); act(); }
+    }
+    $("keys").addEventListener("click", (e) => { if (e.target === $("keys") || e.target.closest("[data-close]")) toggleKeys(false); });
+    $("keysBtn").addEventListener("click", () => { $("settings").classList.remove("is-on"); toggleKeys(true); });
 
     // Search
     $("searchToggle").addEventListener("click", () => $("searchBar").classList.contains("is-on") ? closeSearch() : openSearch());

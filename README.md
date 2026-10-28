@@ -63,10 +63,13 @@ Noesis keeps everything on the paper. It walks you through three passes: get the
 ### Also
 
 - Add papers by arXiv ID, PDF link, upload, or a Zotero `.bib` / `.ris` export. Each paper keeps its own notes, terms and recap.
+- **Picks up where you left off.** Each paper reopens at the page and spot you last read.
+- **Keyboard first.** Press `?` for the cheat sheet: `1` `2` `3` switch passes, `J` / `K` pages, `]` / `[` sections, `/` search, and after selecting text `T` translate, `N` note, `A` ask, `M` term, `H` highlight.
+- **Reading time.** Minutes spent on each pass are counted only while you are actually reading (the tab is visible and you did something in the last 90 seconds). They show in the paper list, on the finish card, and as `reading_minutes` in the exported note.
+- Open a paper straight from a link: `?open=<arXiv ID or PDF link>&title=…`.
 - Full-text search across the paper, your notes and terms (⌘F). Paragraph-by-paragraph translation aligned beside the original, or a *learning mode* that only glosses hard sentences and new words.
 - Box-select a figure or formula on blank space and ask about it; vision-capable models get the image.
 - Two looks: neutral grey, or the warm paper "mist" theme. Dark mode follows your system.
-- Dark mode follows your system.
 - Installable as an app on a phone or desktop (PWA). After the first visit the reader works offline for uploaded papers.
 
 <img src="docs/screenshots/dark.jpg" alt="Dark mode" width="720">
@@ -99,7 +102,7 @@ Cost note: **对照原文** and **问整篇论文** send up to about 60,000 char
 
 | What | Where it lives |
 |---|---|
-| Your papers list, notes, terms, recap | This browser only (localStorage) |
+| Your papers list, notes, terms, recap, reading position and time | This browser only (localStorage) |
 | Uploaded PDFs | This browser only (IndexedDB) |
 | API key | This browser only; sent only to the AI service you picked |
 | Selected text you translate without a key | Sent to Google Translate (MyMemory as a fallback) |
@@ -132,6 +135,14 @@ Then open http://localhost:8000.
 
 ## Changelog
 
+**v3.2.0 — Pick up where you left off**
+
+- Reopening a paper goes back to the page and spot you last read.
+- Keyboard shortcuts with a cheat sheet (`?`), including one-key actions on selected text.
+- Reading time per pass, shown in the paper list and finish card and exported with the note.
+- `?open=` links open a paper directly.
+- Saving a custom AI service without a model name now warns you.
+
 **v3.1.0 — Say it out loud**
 
 - Spoken retelling with a check against the paper; retell again a week later; a nudge for sections you skimmed.
@@ -158,6 +169,8 @@ Then open http://localhost:8000.
 1. **骨架：** 一键跳到摘要、每张图、结论，写下一句“这篇在解决什么问题”。
 2. **精读：** 划词即可翻译、批注、问 AI、记成术语。批注贴在原文旁边；记过的术语在全文自动画虚线；点正文里的“Figure 3”直接弹出那张图。
 3. **复述：** 用自己的话写三句。AI 对照原文只给提示和页码，答案要你点“看原文怎么说”才显示。最后生成一张“能聊卡”，存进 Obsidian。
+
+**3.2.0 新增：** 再打开论文会回到上次读到的位置；按 `?` 看快捷键（`1` `2` `3` 切换三遍、`J` `K` 翻页、`]` `[` 跳节，选中文字后 `T` 翻译、`N` 批注、`A` 问 AI）；记录每一遍实际读了多少分钟（页面在前台、90 秒内有操作才计时），显示在论文列表和读完卡上，并写进导出笔记的 `reading_minutes`。
 
 **怎么开始：** 打开 https://rexxall.github.io/noesis-paper-companion/ ，点“论文 ▾”，输入 arXiv 编号或 PDF 链接，也可以上传 PDF。
 
