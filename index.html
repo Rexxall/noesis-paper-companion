@@ -187,7 +187,7 @@
 
     .pager { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:5; display:flex; align-items:center; gap:2px; background:var(--card); border-radius:999px; padding:4px 8px; box-shadow:var(--shadow-pop); font-size:12.5px; white-space:nowrap; color:var(--ink2); font-variant-numeric:tabular-nums; }
     /* Centre the pager over the reading column, not the whole window. */
-    body[data-pass=skeleton] .pager, body[data-pass=read] .pager { left:calc(248px + (100vw - 248px) / 2); }
+    body[data-pass=skeleton] .pager, body[data-pass=read] .pager { left:calc(272px + (100vw - 272px) / 2); }
     body[data-pass=recap] .pager { left:calc((100vw - 480px) / 2); }
     .pager button { padding:4px 9px; border-radius:999px; }
     .pager button:hover { background:var(--hover); color:var(--ink); }
@@ -524,9 +524,27 @@
     .pop, .settings, .welcome-card, .keys-card { animation:glass-in .34s var(--ease-sheet); }
     @keyframes glass-in { from { opacity:0; transform:translateY(8px) scale(.98); } }
     .welcome, .keys { background:rgba(0,0,0,.16); }
-    .note { border-left:0; border-radius:14px; padding:10px 14px 9px; box-shadow:inset 3px 0 0 var(--note-bar), var(--shadow-sm); }
-    .note.ai { box-shadow:inset 3px 0 0 var(--accent), var(--shadow-sm); }
-    .note.highlight { box-shadow:inset 3px 0 0 #f0d26a, var(--shadow-sm); }
+    /* Margin notes: no colour bar; a small tag inside the card says what it is */
+    .note, .note.ai, .note.highlight { border-left:0; border-radius:14px; padding:10px 14px 9px; box-shadow:0 0 0 .5px var(--glass-hair), var(--shadow-sm); }
+    .note.thread { border-left:0; }
+    .note small { display:flex; align-items:center; gap:6px; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+    .note .tag { flex:none; font-size:10.5px; font-weight:600; line-height:16px; padding:0 7px; border-radius:999px; background:color-mix(in srgb, var(--note-bar) 20%, transparent); color:color-mix(in srgb, var(--note-bar) 62%, var(--ink)); letter-spacing:0; }
+    .note.ai .tag { background:var(--accent-soft); color:var(--accent); }
+    .note.highlight .tag { background:var(--mark); color:var(--ink2); }
+    /* Top-right tools: icon buttons; the talk card is a tinted accent button */
+    .top .tools { gap:2px; }
+    .top .tools .btn.icon { display:inline-grid; place-items:center; width:30px; height:30px; padding:0; color:var(--ink2); }
+    .top .tools .btn.icon:hover, .top .tools .btn.icon[aria-expanded="true"] { background:var(--hover); color:var(--ink); }
+    #openSource.icon { font-size:0; }
+    .top .tools #cardBtn { background:var(--accent-soft); color:var(--accent); box-shadow:none; font-weight:600; margin-left:6px; }
+    .top .tools #cardBtn:hover { background:color-mix(in srgb, var(--accent) 22%, transparent); opacity:1; }
+    /* The rail floats over the reading area as a rounded glass panel; pages scroll beneath it */
+    @media (min-width: 901px) {
+      .body { grid-template-columns:minmax(0,1fr); position:relative; }
+      .body > .rail { position:absolute; z-index:5; top:12px; left:12px; bottom:12px; width:248px; box-sizing:border-box; border-radius:20px; padding:16px 10px 24px; }
+      body[data-pass=skeleton] #pages, body[data-pass=read] #pages { padding-left:272px; }
+    }
+    .rail { background:var(--glass); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); box-shadow:inset 0 1px 0 var(--glint), inset 0 0 0 .5px var(--rim), 0 0 0 .5px var(--glass-hair), var(--shadow-pop); }
     #notePop .note { box-shadow:none; }
     /* Fallbacks: no backdrop-filter, reduce transparency, more contrast, reduce motion */
     @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { :root { --glass:var(--glass-solid); } }
@@ -549,10 +567,10 @@
       </nav>
       <div class="progress" id="progressBar"></div>
       <div class="tools">
-        <button class="btn" id="searchToggle" title="搜索（⌘F）" aria-label="搜索">搜索</button>
-        <a id="openSource" target="_blank" rel="noreferrer">原文 ↗</a>
-        <button class="btn" id="libToggle" aria-expanded="false" aria-controls="libDrawer">论文 ▾</button>
-        <button class="btn" id="settingsToggle" aria-label="设置">⚙︎</button>
+        <button class="btn icon" id="searchToggle" title="搜索（⌘F）" aria-label="搜索"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.6" cy="8.6" r="5.4"/><path d="m12.6 12.6 4.2 4.2"/></svg></button>
+        <a class="btn icon" id="openSource" target="_blank" rel="noreferrer" title="打开原文" aria-label="打开原文"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3.5h5.5V9"/><path d="m16.5 3.5-7 7"/><path d="M14.5 12v3.2a1.3 1.3 0 0 1-1.3 1.3H4.8a1.3 1.3 0 0 1-1.3-1.3V6.8a1.3 1.3 0 0 1 1.3-1.3H8"/></svg></a>
+        <button class="btn icon" id="libToggle" title="论文" aria-label="论文" aria-expanded="false" aria-controls="libDrawer"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.2" y="3.5" width="4" height="13" rx="1"/><rect x="8.6" y="3.5" width="4" height="13" rx="1"/><path d="m14.2 4.4 2.9.8-2.6 11.2-2-.5"/></svg></button>
+        <button class="btn icon" id="settingsToggle" title="设置" aria-label="设置"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="2.4"/><path d="M15.59 8.87 L17.24 9.05 L17.24 10.95 L15.59 11.13 L14.75 13.15 L15.79 14.45 L14.45 15.79 L13.15 14.75 L11.13 15.59 L10.95 17.24 L9.05 17.24 L8.87 15.59 L6.85 14.75 L5.55 15.79 L4.21 14.45 L5.25 13.15 L4.41 11.13 L2.76 10.95 L2.76 9.05 L4.41 8.87 L5.25 6.85 L4.21 5.55 L5.55 4.21 L6.85 5.25 L8.87 4.41 L9.05 2.76 L10.95 2.76 L11.13 4.41 L13.15 5.25 L14.45 4.21 L15.79 5.55 L14.75 6.85Z"/></svg></button>
         <button class="btn dark" id="cardBtn">能聊卡</button>
       </div>
     </header>
@@ -1132,14 +1150,17 @@
     // Fit the widest page to the reading column unless the reader zoomed.
     function applyScale() {
       if (!pdfDoc || pagesBox.children.length !== pdfDoc.numPages) return;
-      const wide = read.clientWidth >= 900 && state.pass !== "recap";
+      // The floating rail covers the left of the reading area; pages are fitted to what is left.
+      const inset = parseFloat(getComputedStyle(pagesBox).paddingLeft) || 0;
+      const width = read.clientWidth - inset;
+      const wide = width >= 900 && state.pass !== "recap";
       document.body.classList.toggle("has-margin", wide);
       if (!userZoomed) {
         const maxW = Math.max(...pageInfo.slice(1).map((p) => p.w));
         // In translation mode the column takes about 40% of the reading area, so long paragraphs stay close to their source.
-        const side = document.body.classList.contains("trans-on") ? Math.round(Math.max(380, Math.min(640, read.clientWidth * 0.42))) : 290;
+        const side = document.body.classList.contains("trans-on") ? Math.round(Math.max(380, Math.min(640, width * 0.42))) : 290;
         document.body.style.setProperty("--trans-w", `${side}px`);
-        const room = read.clientWidth - (wide ? side + 28 + 56 : 28);
+        const room = width - (wide ? side + 28 + 56 : 28);
         scale = Math.max(.5, Math.min(1.6, room / maxW));
       }
       const keep = currentPage;
@@ -1466,8 +1487,11 @@
     function noteCard(a) {
       const card = el("div", `note ${a.kind}${a.parentId ? " thread" : ""}`);
       card.dataset.id = a.id;
-      const label = a.kind === "ai" ? `问 AI · ${a.question || ""}` : a.kind === "highlight" ? "高亮" : "我的批注";
-      card.append(el("small", "", `${label} · p.${a.page}`));
+      // A small tag says whose note it is: mine, an AI answer, or a plain highlight.
+      const head = el("small");
+      head.append(el("span", "tag", a.kind === "ai" ? "问 AI" : a.kind === "highlight" ? "高亮" : "我的批注"));
+      head.append(document.createTextNode(a.kind === "ai" && a.question ? `${a.question} · p.${a.page}` : `p.${a.page}`));
+      card.append(head);
       if (a.quote) card.append(el("div", "quote", a.quote));
       const acts = el("div", "acts");
       if (a.text) {

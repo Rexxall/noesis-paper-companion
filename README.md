@@ -10,7 +10,7 @@
 
 [**Open the app →**](https://rexxall.github.io/noesis-paper-companion/) · [Features](#features) · [Quick start](#quick-start) · [AI setup](#ai-setup) · [Privacy](#privacy) · [中文说明](#中文说明)
 
-<img src="docs/screenshots/close-reading.jpg" alt="Close reading: the PDF in the middle, notes and AI answers pinned in the margin, outline and figures on the left" width="860">
+<img src="docs/screenshots/close-reading.jpg" alt="Close reading: the PDF in the middle, notes and AI answers pinned in the margin, outline and figures in a glass panel on the left" width="860">
 
 </div>
 
@@ -44,7 +44,10 @@ Noesis keeps everything on the paper. It walks you through three passes: get the
 
 ### 3 · Recap — say it out loud
 
-<img src="docs/screenshots/recap.jpg" alt="Recap pass: three sentences in your own words, each checked against the paper" width="720">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/recap-dark.jpg">
+  <img src="docs/screenshots/recap.jpg" alt="Recap pass: three sentences in your own words, each checked against the paper" width="720">
+</picture>
 
 - Write three sentences: the problem, the method, a limitation or question. If you skimmed a section, Noesis says so before you start.
 - **Say it.** Press the mic and retell the paper in 60 seconds; the AI checks what you covered and what you missed. A week later it asks you to retell it again, and shows the two side by side.
@@ -66,14 +69,17 @@ Noesis keeps everything on the paper. It walks you through three passes: get the
 - **Picks up where you left off.** Each paper reopens at the page and spot you last read.
 - **Keyboard first.** Press `?` for the cheat sheet (below): `1` `2` `3` switch passes, `J` / `K` pages, `]` / `[` sections, `/` search, and after selecting text `T` translate, `N` note, `A` ask, `M` term, `H` highlight.
 - **Reading time.** Minutes spent on each pass are counted only while you are actually reading (the tab is visible and you did something in the last 90 seconds). They show in the paper list, on the finish card, and as `reading_minutes` in the exported note.
-- **Glass look.** Bars, popovers and panels are translucent glass over the page, in the current Apple style; controls are capsules. With *Reduce transparency* or *Increase contrast* on, the glass turns solid; with *Reduce motion*, nothing animates. The warm "mist" theme is gone; light and dark follow your system.
+- **Glass look.** Bars, popovers and panels are translucent glass over the page, in the current Apple style; the outline floats as a rounded glass panel, and the top-right tools are icons. Margin notes carry a small tag, "My note" or "Ask AI", instead of a colour bar. With *Reduce transparency* or *Increase contrast* on, the glass turns solid; with *Reduce motion*, nothing animates. The warm "mist" theme is gone; light and dark follow your system.
 - Open a paper straight from a link: `?open=<arXiv ID or PDF link>&title=…`.
 - Full-text search across the paper, your notes and terms (⌘F). Paragraph-by-paragraph translation aligned beside the original, or a *learning mode* that only glosses hard sentences and new words.
 - Box-select a figure or formula on blank space and ask about it; vision-capable models get the image.
 - Dark mode follows your system.
 - Installable as an app on a phone or desktop (PWA). After the first visit the reader works offline for uploaded papers.
 
-<img src="docs/screenshots/keys.jpg" alt="Keyboard shortcut cheat sheet on a glass panel over the paper" width="720">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/keys-dark.jpg">
+  <img src="docs/screenshots/keys.jpg" alt="Keyboard shortcut cheat sheet on a glass panel over the paper" width="720">
+</picture>
 
 <img src="docs/screenshots/dark.jpg" alt="Dark mode" width="720">
 
@@ -145,7 +151,7 @@ Then open http://localhost:8000.
 - Reading time per pass, shown in the paper list and finish card and exported with the note.
 - `?open=` links open a paper directly.
 - Saving a custom AI service without a model name now warns you.
-- New look in the current Apple glass style: translucent bars, popovers and panels; capsule buttons and segmented controls; rounded margin notes. The "mist" theme is removed.
+- New look in the current Apple glass style: translucent bars, popovers and panels; capsule buttons and segmented controls; rounded margin notes with a small tag; a floating glass outline; icon buttons in the top bar. The "mist" theme is removed.
 
 **v3.1.0 — Say it out loud**
 
