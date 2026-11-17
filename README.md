@@ -10,7 +10,10 @@
 
 [**Open the app →**](https://rexxall.github.io/noesis-paper-companion/) · [Features](#features) · [Quick start](#quick-start) · [AI setup](#ai-setup) · [Privacy](#privacy) · [中文说明](#中文说明)
 
-<img src="docs/screenshots/close-reading.jpg" alt="Close reading: the PDF in the middle, notes and AI answers pinned in the margin, outline and figures in a glass panel on the left" width="860">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/reading-dark.jpg">
+  <img src="docs/screenshots/reading.jpg" alt="Close reading: concepts the paper assumes you know are underlined; your own note and a plain-language rewrite sit in the margin beside their paragraphs" width="860">
+</picture>
 
 </div>
 
@@ -21,6 +24,14 @@ A PDF viewer plus a chat window is a slow way to learn a paper. You copy passage
 Noesis keeps everything on the paper. It walks you through three passes: get the skeleton, read closely, then say what the paper did in your own words. The AI helps along the way, but it never writes the summary for you. When you check your summary, it points to what is missing and where to look, and shows the answer only if you ask.
 
 ## Features
+
+### Open and read
+
+- **One field.** Paste an arXiv ID or a PDF link, or drop a PDF anywhere on the page; the paper opens on page 1 with the outline tucked away.
+- **One question first.** A line above page 1 asks what you want to find out this time. It comes back when you finish.
+- **Concepts the paper assumes you know.** With an AI key, Noesis lists them as soon as the paper opens and underlines each one where it first appears. Click one for a short explanation and the page the AI says defines it, then mark it *known*, *unsure* or *new*.
+- **Press `W` on a paragraph** for a plain-language rewrite in the margin, with one line on how it follows from the paragraph before.
+- **A margin notebook.** Notes sit beside their paragraph as handwritten-style text; your own notes carry a red rule, AI answers do not. One card per paragraph; the rest fold into "N more". Switch back to cards in ⚙︎.
 
 ### 1 · Skeleton (about 10 minutes)
 
@@ -42,14 +53,16 @@ Noesis keeps everything on the paper. It walks you through three passes: get the
 
 <img src="docs/screenshots/translation.jpg" alt="Full-text translation aligned paragraph by paragraph beside the original page" width="720">
 
-### 3 · Recap — say it out loud
+### 3 · Done — say it out loud
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/recap-dark.jpg">
-  <img src="docs/screenshots/recap.jpg" alt="Recap pass: three sentences in your own words, each checked against the paper" width="720">
+  <img src="docs/screenshots/recap.jpg" alt="Done panel: the question you started with, three sentences in your own words, and what the paper left you" width="720">
 </picture>
 
-- Write three sentences: the problem, the method, a limitation or question. If you skimmed a section, Noesis says so before you start.
+- Press `R` (or reach the end of the paper). Answer the question you started with, then write three sentences: the problem, the method, a limitation or question. If you skimmed a section, Noesis says so before you start.
+- **What this paper left you:** every note and rewrite in page order, and one **存成笔记** button that writes this paper as Markdown into a folder you pick (an Obsidian vault works). Saving again replaces only Noesis's own block, so anything you wrote around it stays. Where folders can't be written (Safari, phones) you get a zip.
+- Spoken retelling, interview practice and the talk card are under **更多**.
 - **Say it.** Press the mic and retell the paper in 60 seconds; the AI checks what you covered and what you missed. A week later it asks you to retell it again, and shows the two side by side.
 - **Interview practice.** The AI plays the paper's author and asks you five questions, one at a time, with a hint and a model answer you could say in an interview.
 - **Check against the paper.** The AI marks each sentence ✓ / ⚠ / ✗ and gives a *hint* (what is missing, which section to read) plus a page link. Click **看原文怎么说** to see what the paper actually says.
@@ -69,7 +82,7 @@ Noesis keeps everything on the paper. It walks you through three passes: get the
 - **Picks up where you left off.** Each paper reopens at the page and spot you last read.
 - **Keyboard first.** Press `?` for the cheat sheet (below): `1` `2` `3` switch passes, `J` / `K` pages, `]` / `[` sections, `/` search, and after selecting text `T` translate, `N` note, `A` ask, `M` term, `H` highlight.
 - **Reading time.** Minutes spent on each pass are counted only while you are actually reading (the tab is visible and you did something in the last 90 seconds). They show in the paper list, on the finish card, and as `reading_minutes` in the exported note.
-- **Glass look.** Bars, popovers and panels are translucent glass over the page, in the current Apple style; the outline floats as a rounded glass panel, and the top-right tools are icons. Margin notes carry a small tag, "My note" or "Ask AI", instead of a colour bar. With *Reduce transparency* or *Increase contrast* on, the glass turns solid; with *Reduce motion*, nothing animates. The warm "mist" theme is gone; light and dark follow your system.
+- **Glass controls.** Bars and popovers are translucent glass over the page. With *Reduce transparency* or *Increase contrast* on, the glass turns solid; with *Reduce motion*, nothing animates. Light and dark follow your system.
 - Open a paper straight from a link: `?open=<arXiv ID or PDF link>&title=…`.
 - Full-text search across the paper, your notes and terms (⌘F). Paragraph-by-paragraph translation aligned beside the original, or a *learning mode* that only glosses hard sentences and new words.
 - Box-select a figure or formula on blank space and ask about it; vision-capable models get the image.
@@ -81,13 +94,11 @@ Noesis keeps everything on the paper. It walks you through three passes: get the
   <img src="docs/screenshots/keys.jpg" alt="Keyboard shortcut cheat sheet on a glass panel over the paper" width="720">
 </picture>
 
-<img src="docs/screenshots/dark.jpg" alt="Dark mode" width="720">
-
 ## Quick start
 
 1. Open **https://rexxall.github.io/noesis-paper-companion/**.
-2. Click **论文 ▾** and paste an arXiv ID (for example `1706.03762`) or a PDF link, or upload a PDF.
-3. Follow the three steps at the top: **骨架 → 精读 → 复述**.
+2. Paste an arXiv ID (for example `1706.03762`) or a PDF link into the field, or drop a PDF on the page.
+3. Read. Press `R` when you're done; the three steps at the top are **骨架 → 精读 → 读完**.
 
 On a phone: iPhone → Safari → Share → *Add to Home Screen*; Android → Chrome → menu → *Install app*.
 
@@ -99,6 +110,7 @@ To get answers directly, open **⚙︎** and pick a service:
 
 | Service | What to enter | Default model |
 |---|---|---|
+| Claude | API key | `claude-sonnet-5-5` |
 | DeepSeek | API key | `deepseek-chat` |
 | OpenAI | API key | `gpt-5.2-mini` |
 | Other (OpenAI-compatible) | Base URL + API key | your choice |
@@ -144,6 +156,18 @@ Then open http://localhost:8000.
 
 ## Changelog
 
+**v4.0.0 — Open straight into reading**
+
+- One start field: paste an ID or link, or drop a PDF; the outline rail is hidden until you want it.
+- A question line above page 1, answered again when you finish.
+- Concepts the paper assumes you know are listed automatically and underlined in place, with a short explanation and a page to check.
+- `W` rewrites a paragraph in plain words, in the margin.
+- Margin notebook look (switchable): one card per paragraph, your own notes marked with a red rule.
+- Without a key, the copy-and-paste helper docks in a corner instead of covering the page.
+- Done panel: your question, three sentences, what the paper left you, and one button to save it as Markdown into a folder. Re-saving keeps what you wrote around Noesis's block.
+- Zoom, resizing and the outline rail keep your reading position; an AI answer that arrives after you switch papers stays with the paper it was about.
+- Claude as an AI service, with prompt caching.
+
 **v3.2.0 — Pick up where you left off**
 
 - Reopening a paper goes back to the page and spot you last read.
@@ -178,7 +202,9 @@ Then open http://localhost:8000.
 **这是什么：** 一个读论文的网页应用。它不替你总结，而是带你读三遍：
 1. **骨架：** 一键跳到摘要、每张图、结论，写下一句“这篇在解决什么问题”。
 2. **精读：** 划词即可翻译、批注、问 AI、记成术语。批注贴在原文旁边；记过的术语在全文自动画虚线；点正文里的“Figure 3”直接弹出那张图。
-3. **复述：** 用自己的话写三句。AI 对照原文只给提示和页码，答案要你点“看原文怎么说”才显示。最后生成一张“能聊卡”，存进 Obsidian。
+3. **读完：** 用自己的话写三句。AI 对照原文只给提示和页码，答案要你点“看原文怎么说”才显示。最后生成一张“能聊卡”，存进 Obsidian。
+
+**4.0.0 新增：** 一个输入框就能打开论文（贴编号、链接或拖 PDF）；第 1 页上方写一句“这次想弄明白什么”；有 AI key 时自动列出论文默认你懂的概念并在原文画虚线；按 `W` 把一段改写成大白话放在页边；页边笔记本外观（可切换）；读完面板一键把这篇存成 Markdown 放进你选的文件夹（比如 Obsidian 库），再存只替换 Noesis 自己那一块。
 
 **3.2.0 新增：** 再打开论文会回到上次读到的位置；按 `?` 看快捷键（`1` `2` `3` 切换三遍、`J` `K` 翻页、`]` `[` 跳节，选中文字后 `T` 翻译、`N` 批注、`A` 问 AI）；记录每一遍实际读了多少分钟（页面在前台、90 秒内有操作才计时），显示在论文列表和读完卡上，并写进导出笔记的 `reading_minutes`。
 

@@ -1,0 +1,5 @@
+# Personal knowledge packs stay on this machine
+*.noesis-pack.json
+noesis-pack*.json
+noesis-concepts-*.json
+noesis-backup-*.json
