@@ -27,6 +27,7 @@ Noesis keeps everything on the paper. It walks you through three passes: get the
 
 ### Open and read
 
+- **English or Chinese interface.** It follows your browser; switch it under ⚙︎. AI answers can be in English, Chinese or Japanese, set separately.
 - **One field.** Paste an arXiv ID or a PDF link, or drop a PDF anywhere on the page; the paper opens on page 1 with the outline tucked away.
 - **One question first.** A line above page 1 asks what you want to find out this time. It comes back when you finish.
 - **Concepts the paper assumes you know.** With an AI key, Noesis lists them as soon as the paper opens and underlines each one where it first appears. Click one for a short explanation and the page the AI says defines it, then mark it *known*, *unsure* or *new*.
@@ -152,9 +153,14 @@ Then open http://localhost:8000.
 
 - Heading and caption detection is heuristic. Unusual layouts may miss a section or crop a figure loosely.
 - Some sites block loading their PDFs from another page. Download the file and upload it instead.
-- Saving to Obsidian uses an `obsidian://` link, so very long notes may be cut off. Use **下载 .md** for those.
+- Saving to Obsidian uses an `obsidian://` link, so very long notes may be cut off. Use **Download .md** for those.
 
 ## Changelog
+
+**v4.1.0 — English interface**
+
+- The interface is in English or Chinese. It follows your browser language; switch it under ⚙︎ › Interface language.
+- In English, AI answers default to English, and saved notes use English folder names and headings (`Papers/`, `Insights/`, `## Done`). Your own writing is never translated.
 
 **v4.0.0 — Open straight into reading**
 
@@ -203,6 +209,8 @@ Then open http://localhost:8000.
 1. **骨架：** 一键跳到摘要、每张图、结论，写下一句“这篇在解决什么问题”。
 2. **精读：** 划词即可翻译、批注、问 AI、记成术语。批注贴在原文旁边；记过的术语在全文自动画虚线；点正文里的“Figure 3”直接弹出那张图。
 3. **读完：** 用自己的话写三句。AI 对照原文只给提示和页码，答案要你点“看原文怎么说”才显示。最后生成一张“能聊卡”，存进 Obsidian。
+
+**4.1.0 新增：** 界面支持英文：跟随浏览器语言，也可以在 ⚙︎ 的“界面语言”里切换。英文界面下 AI 默认用英文回答，存成的笔记也用英文文件夹和标题；你自己写的内容不翻译。
 
 **4.0.0 新增：** 一个输入框就能打开论文（贴编号、链接或拖 PDF）；第 1 页上方写一句“这次想弄明白什么”；有 AI key 时自动列出论文默认你懂的概念并在原文画虚线；按 `W` 把一段改写成大白话放在页边；页边笔记本外观（可切换）；读完面板一键把这篇存成 Markdown 放进你选的文件夹（比如 Obsidian 库），再存只替换 Noesis 自己那一块。
 
